@@ -1,178 +1,159 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Phân tích lớp học với GPT trực tiếp</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body { font-family: Arial; margin: 40px; background: #f9f9f9; }
-h1 { color: #333; }
-select, button { padding: 8px 12px; margin: 5px 0; }
-#report { margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
-canvas { margin-top: 20px; }
-</style>
+    <meta charset="UTF-8">
+    <title>HDC Study - Quản lý lớp học</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #f4f6f9; }
+        .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        
+        .filter-box { display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 30px; }
+        select { padding: 10px; border-radius: 6px; border: 1px solid #ddd; width: 250px; }
+        
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .stat-card b { display: block; font-size: 28px; color: #3498db; }
+        
+        .content-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #f8f9fa; color: #666; }
+        
+        .badge-done { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 12px; }
+        .badge-none { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 12px; font-size: 12px; }
+        
+        .chart-container { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+    </style>
 </head>
 <body>
 
-<h1>Phân tích lớp học với GPT trực tiếp</h1>
+<div class="container">
+    <h1>📋 Hệ thống quản lý học liệu </h1>
 
-<label for="classSelect">Chọn lớp học:</label>
-<select id="classSelect">
-  <option value="">-- Chọn lớp --</option>
-</select>
-<button id="analyzeBtn">Phân tích AI</button>
+    <div class="filter-box">
+        <label>Chọn lớp học:</label>
+        <select id="classSelect" onchange="loadDataByClass()">
+            <option value="">-- Chọn lớp học --</option>
+        </select>
+    </div>
 
-<div id="report"></div>
-<canvas id="scoreChart" width="400" height="200"></canvas>
+    <div class="stats-row">
+        <div class="stat-card">Sĩ số lớp<b id="totalStudents">0</b></div>
+        <div class="stat-card">Đã nộp bài<b id="doneCount">0</b></div>
+        <div class="stat-card">Chưa nộp bài<b id="pendingCount">0</b></div>
+        <div class="stat-card">Điểm TB lớp<b id="avgScore">0</b></div>
+    </div>
+
+    <div class="content-grid">
+        <div>
+            <h3>Danh sách học sinh lớp</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Học sinh</th>
+                        <th>Trạng thái</th>
+                        <th>Điểm AI</th>
+                        <th>Video</th>
+                    </tr>
+                </thead>
+                <tbody id="studentList"></tbody>
+            </table>
+        </div>
+
+        <div class="chart-container">
+            <h3>Phổ điểm của lớp</h3>
+            <canvas id="scoreChart"></canvas>
+        </div>
+    </div>
+</div>
 
 <script>
-  // --- Supabase ---
-  const supabaseUrl = 'https://zpvhxuwwgrtqbgziylbl.supabase.co';
-  const supabaseKey = 'sb_publishable_u0kVgF9XCLTk5tD9M_xj9w_9lKguAgf';
-  const sb = supabase.createClient(supabaseUrl, supabaseKey);
+    // --- Cấu hình Supabase ---
+    const supabaseUrl = 'https://kisogvsqpimhlqidkekf.supabase.co'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpc29ndnNxcGltaGxxaWRrZWtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NTAzMTUsImV4cCI6MjA5MDUyNjMxNX0.TbNVxnDiyUY-NDpTxycGbSuSII9p_JV5VGWklTzqU84';
+    const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
-  const classSelect = document.getElementById('classSelect');
-  const analyzeBtn = document.getElementById('analyzeBtn');
-  const reportDiv = document.getElementById('report');
-  const scoreChartEl = document.getElementById('scoreChart');
+    let myChart;
 
-  // Load danh sách lớp học
-  async function loadClasses() {
-  try {
-    const { data, error } = await sb
-      .from('classes')
-      .select('class_id,name')
-      .order('name');
-
-    if(error) {
-      console.error('Lỗi Supabase khi lấy lớp:', error);
-      reportDiv.innerHTML = 'Lỗi khi load danh sách lớp!';
-      return;
+    // 1. Load danh sách lớp khi vừa mở trang
+    async function init() {
+        const { data } = await sb.from('classes').select('*').order('name');
+        const select = document.getElementById('classSelect');
+        data.forEach(c => {
+            select.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
+        });
     }
 
-    if(!data || data.length === 0) {
-      console.warn('Không có lớp nào trong database hoặc không có quyền truy cập.');
-      reportDiv.innerHTML = 'Chưa có lớp học hoặc không có quyền truy cập.';
-      return;
+    // 2. Hàm xử lý chính khi chọn lớp
+    async function loadDataByClass() {
+        const classId = document.getElementById('classSelect').value;
+        if (!classId) return;
+
+        // A. Lấy danh sách học sinh của lớp
+        const { data: students } = await sb.from('students').select('*').eq('class_id', classId);
+        
+        // B. Lấy tất cả submissions
+        const studentIds = students.map(s => s.student_id);
+        const { data: subs } = await sb.from('submissions').select('*').in('student_id', studentIds);
+
+        // C. Xử lý dữ liệu hiển thị
+        let totalScore = 0;
+        let scoreCounts = Array(11).fill(0); // 0 đến 10
+        const listBody = document.getElementById('studentList');
+        listBody.innerHTML = '';
+
+        students.forEach(student => {
+            const mySub = subs.find(sub => sub.student_id === student.student_id);
+            const hasSub = !!mySub;
+            const score = hasSub ? (mySub.score || 0) : null;
+            
+            if (score !== null) {
+                totalScore += score;
+                scoreCounts[Math.round(score)]++;
+            }
+
+            listBody.innerHTML += `
+                <tr>
+                    <td>${student.name}</td>
+                    <td><span class="${hasSub ? 'badge-done' : 'badge-none'}">${hasSub ? 'Đã nộp' : 'Chưa nộp'}</span></td>
+                    <td>${score !== null ? score : '-'}</td>
+                    <td>${hasSub ? `<a href="${mySub.video_url}" target="_blank">🔗 Xem</a>` : '-'}</td>
+                </tr>
+            `;
+        });
+
+        // D. Cập nhật con số thống kê
+        const submittedCount = subs.length;
+        document.getElementById('totalStudents').innerText = students.length;
+        document.getElementById('doneCount').innerText = submittedCount;
+        document.getElementById('pendingCount').innerText = students.length - submittedCount;
+        document.getElementById('avgScore').innerText = submittedCount ? (totalScore / submittedCount).toFixed(1) : 0;
+
+        // E. Vẽ biểu đồ
+        renderChart(scoreCounts);
     }
 
-    data.forEach(cls => {
-      const option = document.createElement('option');
-      option.value = cls.class_id;
-      option.textContent = cls.name;
-      classSelect.appendChild(option);
-    });
+    function renderChart(counts) {
+        const ctx = document.getElementById('scoreChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['0','1','2','3','4','5','6','7','8','9','10'],
+                datasets: [{
+                    label: 'Số lượng học sinh',
+                    data: counts,
+                    backgroundColor: '#3498db'
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+        });
+    }
 
-    console.log('Danh sách lớp load thành công:', data);
-  } catch (err) {
-    console.error('Lỗi khi loadClasses:', err);
-    reportDiv.innerHTML = 'Lỗi khi load danh sách lớp!';
-  }
-}
-
-loadClasses();
-
-  // --- GPT API frontend ---
-  async function analyzeSummariesWithGPT(summaryText) {
-    const OPENAI_API_KEY = ''; // ⚠️ Chỉ dùng thử nghiệm, không để production
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type':'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'Bạn là chuyên gia giáo dục. Phân tích phản hồi học sinh, tóm tắt các điểm cần cải thiện và đưa ra khuyến nghị cải thiện bài học.' },
-          { role: 'user', content: `Phản hồi của học sinh:\n${summaryText}` }
-        ],
-        temperature: 0.7
-      })
-    });
-
-    const data = await response.json();
-    return data.choices[0].message.content || 'Chưa có khuyến nghị';
-  }
-
-  // --- Phân tích lớp ---
-  analyzeBtn.addEventListener('click', async () => {
-    const classId = classSelect.value;
-    if(!classId) { alert('Vui lòng chọn lớp!'); return; }
-
-    reportDiv.innerHTML = 'Đang phân tích...';
-
-    // Lấy sinh viên
-    const { data: students, error: studentErr } = await sb
-      .from('students')
-      .select('student_id,name')
-      .eq('class_id', classId);
-
-    if(studentErr) { console.error(studentErr); reportDiv.innerHTML = 'Lỗi lấy sinh viên'; return; }
-    const studentIds = students.map(s => s.student_id);
-
-    // Lấy submissions
-    const { data: subs, error: subErr } = await sb
-      .from('submissions')
-      .select('submission_id, student_id, lesson_id, score, summary, submitted_at')
-      .in('student_id', studentIds);
-
-    if(subErr) { console.error(subErr); reportDiv.innerHTML = 'Lỗi lấy submissions'; return; }
-
-    // Thống kê
-    const submittedStudents = new Set(subs.map(s => s.student_id));
-    const notSubmittedStudents = students.filter(s => !submittedStudents.has(s.student_id));
-    const scores = subs.map(s => s.score).filter(s => s !== null);
-    const avgScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2) : 0;
-    const minScore = scores.length ? Math.min(...scores) : 0;
-    const maxScore = scores.length ? Math.max(...scores) : 0;
-
-    // Biểu đồ
-    // Biểu đồ
-const scoreCounts = {};
-scores.forEach(s => { scoreCounts[s] = (scoreCounts[s]||0)+1; });
-const chartLabels = Object.keys(scoreCounts).sort((a,b)=>a-b);
-const chartData = chartLabels.map(l => scoreCounts[l]);
-
-// Destroy chart cũ nếu tồn tại
-if (window.scoreChart && typeof window.scoreChart.destroy === 'function') {
-    window.scoreChart.destroy();
-}
-
-// Tạo chart mới
-window.scoreChart = new Chart(scoreChartEl, {
-  type: 'bar',
-  data: {
-    labels: chartLabels,
-    datasets: [{
-      label: 'Số sinh viên',
-      data: chartData,
-      backgroundColor: 'rgba(75, 192, 192, 0.6)'
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true } }
-  }
-});
-
-    // Gọi GPT trực tiếp
-    const summariesText = subs.map(s => `Bài học ${s.lesson_id}: ${s.summary || ''}`).join('\n');
-    const recommendation = await analyzeSummariesWithGPT(summariesText);
-
-    // Hiển thị báo cáo
-    reportDiv.innerHTML = `
-      <h2>Báo cáo lớp: ${classSelect.selectedOptions[0].text}</h2>
-      <p>Sinh viên đã nộp bài: <b>${submittedStudents.size}</b></p>
-      <p>Sinh viên chưa nộp bài: <b>${notSubmittedStudents.length}</b></p>
-      <p>Phổ điểm: Min=${minScore}, Max=${maxScore}, Trung bình=${avgScore}</p>
-      <h3>Khuyến nghị AI:</h3>
-      <p>${recommendation}</p>
-    `;
-  });
+    init();
 </script>
 
 </body>
