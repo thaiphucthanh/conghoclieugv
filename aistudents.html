@@ -2,36 +2,131 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>HDC Study - Quản lý lớp học</title>
+    <title>Quản lý lớp học - nhận xét của AI</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 30px; background: #f4f6f9; }
-        .container { max-width: 1100px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        
-        .filter-box { display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 30px; }
-        select { padding: 10px; border-radius: 6px; border: 1px solid #ddd; width: 250px; }
-        
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .stat-card b { display: block; font-size: 28px; color: #3498db; }
-        
-        .content-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background: #f8f9fa; color: #666; }
-        
-        .badge-done { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 12px; font-size: 12px; }
-        .badge-none { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 12px; font-size: 12px; }
-        
-        .chart-container { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 30px;
+            background: #f4f6f9;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .filter-box {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            width: 250px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .stat-card b {
+            display: block;
+            font-size: 28px;
+            color: #3498db;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .comment-cell {
+            max-width: 320px;
+            white-space: normal;
+            line-height: 1.5;
+            color: #444;
+            font-size: 13px;
+        }
+
+        .badge-done {
+            background: #dcfce7;
+            color: #166534;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .badge-none {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .chart-container {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📋 Hệ thống quản lý học liệu </h1>
+    <h1>📋 Hệ thống quản lý học liệu</h1>
 
     <div class="filter-box">
         <label>Chọn lớp học:</label>
@@ -56,6 +151,7 @@
                         <th>Học sinh</th>
                         <th>Trạng thái</th>
                         <th>Điểm AI</th>
+                        <th>Nhận xét AI</th>
                         <th>Video</th>
                     </tr>
                 </thead>
@@ -71,45 +167,75 @@
 </div>
 
 <script>
-    // --- Cấu hình Supabase ---
-    const supabaseUrl = 'https://kisogvsqpimhlqidkekf.supabase.co'; 
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtpc29ndnNxcGltaGxxaWRrZWtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NTAzMTUsImV4cCI6MjA5MDUyNjMxNX0.TbNVxnDiyUY-NDpTxycGbSuSII9p_JV5VGWklTzqU84';
+    const supabaseUrl = 'https://kisogvsqpimhlqidkekf.supabase.co';
+    const supabaseKey = 'YOUR_SUPABASE_KEY';
     const sb = supabase.createClient(supabaseUrl, supabaseKey);
 
     let myChart;
 
-    // 1. Load danh sách lớp khi vừa mở trang
     async function init() {
-        const { data } = await sb.from('classes').select('*').order('name');
+        const { data, error } = await sb
+            .from('classes')
+            .select('*')
+            .order('name');
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
         const select = document.getElementById('classSelect');
+
         data.forEach(c => {
             select.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
         });
     }
 
-    // 2. Hàm xử lý chính khi chọn lớp
     async function loadDataByClass() {
         const classId = document.getElementById('classSelect').value;
         if (!classId) return;
 
-        // A. Lấy danh sách học sinh của lớp
-        const { data: students } = await sb.from('students').select('*').eq('class_id', classId);
-        
-        // B. Lấy tất cả submissions
-        const studentIds = students.map(s => s.student_id);
-        const { data: subs } = await sb.from('submissions').select('*').in('student_id', studentIds);
+        const { data: students, error: studentError } = await sb
+            .from('students')
+            .select('*')
+            .eq('class_id', classId)
+            .order('name');
 
-        // C. Xử lý dữ liệu hiển thị
+        if (studentError) {
+            console.error(studentError);
+            return;
+        }
+
+        const studentIds = students.map(s => s.student_id);
+
+        const { data: subs, error: subError } = await sb
+            .from('submissions')
+            .select('student_id, score, summary, video_url, submitted_at')
+            .in('student_id', studentIds)
+            .order('submitted_at', { ascending: false });
+
+        if (subError) {
+            console.error(subError);
+            return;
+        }
+
         let totalScore = 0;
-        let scoreCounts = Array(11).fill(0); // 0 đến 10
+        let scoreCounts = Array(11).fill(0);
+
         const listBody = document.getElementById('studentList');
         listBody.innerHTML = '';
 
         students.forEach(student => {
+
+            // lấy submission mới nhất của học sinh
             const mySub = subs.find(sub => sub.student_id === student.student_id);
+
             const hasSub = !!mySub;
-            const score = hasSub ? (mySub.score || 0) : null;
-            
+            const score = hasSub ? Number(mySub.score || 0) : null;
+            const comment = hasSub
+                ? (mySub.summary || 'Không có nhận xét')
+                : '-';
+
             if (score !== null) {
                 totalScore += score;
                 scoreCounts[Math.round(score)]++;
@@ -118,27 +244,39 @@
             listBody.innerHTML += `
                 <tr>
                     <td>${student.name}</td>
-                    <td><span class="${hasSub ? 'badge-done' : 'badge-none'}">${hasSub ? 'Đã nộp' : 'Chưa nộp'}</span></td>
+                    <td>
+                        <span class="${hasSub ? 'badge-done' : 'badge-none'}">
+                            ${hasSub ? 'Đã nộp' : 'Chưa nộp'}
+                        </span>
+                    </td>
                     <td>${score !== null ? score : '-'}</td>
-                    <td>${hasSub ? `<a href="${mySub.video_url}" target="_blank">🔗 Xem</a>` : '-'}</td>
+                    <td class="comment-cell">${comment}</td>
+                    <td>
+                        ${hasSub
+                            ? `<a href="${mySub.video_url}" target="_blank">🔗 Xem</a>`
+                            : '-'}
+                    </td>
                 </tr>
             `;
         });
 
-        // D. Cập nhật con số thống kê
         const submittedCount = subs.length;
+
         document.getElementById('totalStudents').innerText = students.length;
         document.getElementById('doneCount').innerText = submittedCount;
         document.getElementById('pendingCount').innerText = students.length - submittedCount;
-        document.getElementById('avgScore').innerText = submittedCount ? (totalScore / submittedCount).toFixed(1) : 0;
+        document.getElementById('avgScore').innerText = submittedCount
+            ? (totalScore / submittedCount).toFixed(1)
+            : 0;
 
-        // E. Vẽ biểu đồ
         renderChart(scoreCounts);
     }
 
     function renderChart(counts) {
         const ctx = document.getElementById('scoreChart').getContext('2d');
+
         if (myChart) myChart.destroy();
+
         myChart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -149,7 +287,17 @@
                     backgroundColor: '#3498db'
                 }]
             },
-            options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
         });
     }
 
