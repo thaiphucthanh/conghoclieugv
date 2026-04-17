@@ -1,98 +1,235 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard giáo viên</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-body { font-family: Arial; background: #f4f6f9; padding: 20px; }
-.container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-
-.count { font-weight: bold; color: #3498db; }
-</style>
+  <meta charset="UTF-8">
+  <title>Dashboard Giáo Viên - Thống kê Sức khỏe Học sinh</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #006699;
+      --success: #00c853;
+      --accent: #d81b60;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f7f9;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    h1 {
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    select {
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      min-width: 280px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background: #eef2f5;
+      font-weight: 600;
+      color: #333;
+    }
+    tr:hover {
+      background: #f8fbff;
+    }
+    .count {
+      font-weight: bold;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .ai-count {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    .latest {
+      color: #555;
+    }
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #888;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-style: italic;
+    }
+    .btn-refresh {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="container">
+    <h1>📊 Dashboard Giáo Viên</h1>
+    <p class="subtitle">Thống kê số lần ghi nhận sức khỏe & phân tích AI của học sinh</p>
 
-<div class="container">
-    <h2>📊 Thống kê số lần hỏi AI</h2>
+    <div class="controls">
+      <select id="classSelect" onchange="loadStats()">
+        <option value="">-- Chọn lớp để xem thống kê --</option>
+      </select>
+      <button class="btn-refresh" onclick="loadStats()">🔄 Làm mới</button>
+    </div>
 
-    <select id="classSelect" onchange="loadStats()"></select>
+    <div id="loading" class="loading" style="display: none;">Đang tải dữ liệu...</div>
+    <div id="emptyState" class="empty" style="display: none;">Chưa có dữ liệu cho lớp này.</div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Học sinh</th>
-                <th>Số lần hỏi AI</th>
-                <th>Lần gần nhất</th>
-            </tr>
-        </thead>
-        <tbody id="body"></tbody>
+    <table id="statsTable">
+      <thead>
+        <tr>
+          <th>Học sinh</th>
+          <th>Số lần ghi nhận sức khỏe</th>
+          <th>Số lần AI phân tích</th>
+          <th>Lần ghi gần nhất</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
     </table>
-</div>
+  </div>
 
-<script>
-const sb = supabase.createClient(
-  'https://kisogvsqpimhlqidkekf.supabase.co',
-  'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A'
-);
+  <script>
+    const sb = supabase.createClient(
+      'https://kisogvsqpimhlqidkekf.supabase.co',
+      'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A'
+    );
 
-async function init() {
-    const { data } = await sb.from('classes').select('*');
+    async function init() {
+      try {
+        const { data: classes, error } = await sb.from('classes').select('*').order('name');
+        if (error) throw error;
 
-    const select = document.getElementById('classSelect');
-    select.innerHTML = '<option value="">-- chọn lớp --</option>';
+        const select = document.getElementById('classSelect');
+        select.innerHTML = '<option value="">-- Chọn lớp để xem thống kê --</option>';
+        
+        classes.forEach(c => {
+          select.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Không thể tải danh sách lớp. Vui lòng kiểm tra lại.");
+      }
+    }
 
-    data.forEach(c => {
-        select.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
-    });
-}
+    async function loadStats() {
+      const classId = document.getElementById('classSelect').value;
+      const loadingEl = document.getElementById('loading');
+      const emptyEl = document.getElementById('emptyState');
+      const tbody = document.getElementById('tableBody');
 
-async function loadStats() {
-    const classId = document.getElementById('classSelect').value;
-    if (!classId) return;
+      if (!classId) {
+        tbody.innerHTML = '';
+        emptyEl.style.display = 'none';
+        return;
+      }
 
-    const { data: students } = await sb
-        .from('students')
-        .select('*')
-        .eq('class_id', classId);
+      loadingEl.style.display = 'block';
+      emptyEl.style.display = 'none';
+      tbody.innerHTML = '';
 
-    const ids = students.map(s => s.student_id);
+      try {
+        // Lấy danh sách học sinh của lớp
+        const { data: students, error: studentError } = await sb
+          .from('students')
+          .select('student_id, name')
+          .eq('class_id', classId)
+          .order('name');
 
-    const { data: logs } = await sb
-        .from('health_logs')
-        .select('*')
-        .in('student_id', ids);
+        if (studentError) throw studentError;
+        if (!students || students.length === 0) {
+          emptyEl.textContent = "Lớp này chưa có học sinh.";
+          emptyEl.style.display = 'block';
+          return;
+        }
 
-    const tbody = document.getElementById('body');
-    tbody.innerHTML = '';
+        const studentIds = students.map(s => s.student_id);
 
-    students.forEach(s => {
-        const myLogs = logs.filter(l => l.student_id === s.student_id);
+        // Lấy tất cả health_logs của lớp
+        const { data: logs, error: logError } = await sb
+          .from('health_logs')
+          .select('student_id, record_date, ai_comment')
+          .in('student_id', studentIds);
 
-        const count = myLogs.length;
+        if (logError) throw logError;
 
-        const latest = count
-            ? myLogs.sort((a,b)=>new Date(b.record_date)-new Date(a.record_date))[0].record_date
+        tbody.innerHTML = '';
+
+        students.forEach(student => {
+          const myLogs = logs.filter(l => l.student_id === student.student_id);
+          const totalLogs = myLogs.length;
+          
+          // Số lần AI đã phân tích (có ai_comment)
+          const aiCount = myLogs.filter(l => l.ai_comment && l.ai_comment.trim() !== '').length;
+
+          const latestDate = totalLogs 
+            ? myLogs.sort((a, b) => new Date(b.record_date) - new Date(a.record_date))[0].record_date 
             : '-';
 
-        tbody.innerHTML += `
+          const row = `
             <tr>
-                <td>${s.name}</td>
-                <td class="count">${count}</td>
-                <td>${latest}</td>
+              <td><strong>${student.name}</strong></td>
+              <td class="count">${totalLogs}</td>
+              <td class="ai-count">${aiCount}</td>
+              <td class="latest">${latestDate}</td>
             </tr>
-        `;
-    });
-}
+          `;
+          tbody.innerHTML += row;
+        });
 
-init();
-</script>
+        // Nếu không có dữ liệu nào
+        if (tbody.innerHTML === '') {
+          emptyEl.style.display = 'block';
+        }
 
+      } catch (err) {
+        console.error(err);
+        alert("Có lỗi khi tải dữ liệu: " + err.message);
+      } finally {
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    // Khởi chạy khi tải trang
+    init();
+  </script>
 </body>
 </html>
