@@ -2,129 +2,84 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Giáo Viên - Thống kê Sức khỏe Học sinh</title>
+  <title>Dashboard Giáo Viên - Chi tiết Sức khỏe Học sinh</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --primary: #006699;
-      --success: #00c853;
-      --accent: #d81b60;
-    }
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f4f7f9;
-      margin: 0;
+    :root { --primary: #006699; --accent: #d81b60; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    h1 { color: var(--primary); text-align: center; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #666; margin-bottom: 25px; }
+
+    .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+    select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; min-width: 280px; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #eef2f5; font-weight: 600; }
+    tr:hover { background: #f8fbff; }
+
+    .checkbox { width: 20px; height: 20px; }
+    .student-name { font-weight: 500; }
+
+    .detail-panel {
+      margin-top: 30px;
       padding: 20px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      border-left: 5px solid var(--accent);
+      display: none;
     }
-    .container {
-      max-width: 1100px;
-      margin: auto;
+
+    .ai-comment {
       background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    }
-    h1 {
-      color: var(--primary);
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      text-align: center;
-      color: #666;
-      margin-bottom: 25px;
-    }
-    .controls {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-    select {
-      padding: 10px 15px;
-      border: 1px solid #ddd;
+      padding: 15px;
+      margin: 12px 0;
       border-radius: 8px;
-      font-size: 1rem;
-      min-width: 280px;
+      border-left: 4px solid var(--accent);
+      line-height: 1.6;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 14px 12px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background: #eef2f5;
-      font-weight: 600;
-      color: #333;
-    }
-    tr:hover {
-      background: #f8fbff;
-    }
-    .count {
-      font-weight: bold;
-      color: var(--primary);
-      font-size: 1.1rem;
-    }
-    .ai-count {
-      font-weight: bold;
-      color: var(--accent);
-    }
-    .latest {
-      color: #555;
-    }
-    .loading {
-      text-align: center;
-      padding: 30px;
-      color: #888;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px;
-      color: #999;
-      font-style: italic;
-    }
-    .btn-refresh {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+
+    .loading { text-align: center; padding: 30px; color: #888; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background: var(--primary); color: white; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>📊 Dashboard Giáo Viên</h1>
-    <p class="subtitle">Thống kê số lần ghi nhận sức khỏe & phân tích AI của học sinh</p>
+    <p class="subtitle">Quản lý & theo dõi sức khỏe học sinh theo lớp</p>
 
     <div class="controls">
-      <select id="classSelect" onchange="loadStats()">
-        <option value="">-- Chọn lớp để xem thống kê --</option>
+      <select id="classSelect" onchange="loadStudents()">
+        <option value="">-- Chọn lớp --</option>
       </select>
-      <button class="btn-refresh" onclick="loadStats()">🔄 Làm mới</button>
+      <button onclick="loadStudents()">🔄 Làm mới</button>
     </div>
 
-    <div id="loading" class="loading" style="display: none;">Đang tải dữ liệu...</div>
-    <div id="emptyState" class="empty" style="display: none;">Chưa có dữ liệu cho lớp này.</div>
+    <div id="loading" class="loading" style="display:none;">Đang tải dữ liệu...</div>
 
-    <table id="statsTable">
+    <table id="studentTable">
       <thead>
         <tr>
+          <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
           <th>Học sinh</th>
-          <th>Số lần ghi nhận sức khỏe</th>
+          <th>Số lần ghi nhận</th>
           <th>Số lần AI phân tích</th>
-          <th>Lần ghi gần nhất</th>
+          <th>Lần gần nhất</th>
         </tr>
       </thead>
       <tbody id="tableBody"></tbody>
     </table>
+
+    <!-- Panel chi tiết khi chọn 1 học sinh -->
+    <div id="detailPanel" class="detail-panel">
+      <h2 id="selectedStudentName"></h2>
+      <p><strong>Số lần ghi nhận sức khỏe:</strong> <span id="totalLogs"></span></p>
+      <p><strong>Số lần AI đã phân tích:</strong> <span id="aiCount"></span></p>
+
+      <h3>📋 Các nhận xét từ AI</h3>
+      <div id="aiComments"></div>
+    </div>
   </div>
 
   <script>
@@ -133,102 +88,136 @@
       'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A'
     );
 
+    let currentStudents = [];
+    let currentLogs = [];
+
     async function init() {
       try {
-        const { data: classes, error } = await sb.from('classes').select('*').order('name');
-        if (error) throw error;
-
+        const { data: classes } = await sb.from('classes').select('*').order('name');
         const select = document.getElementById('classSelect');
-        select.innerHTML = '<option value="">-- Chọn lớp để xem thống kê --</option>';
-        
+        select.innerHTML = '<option value="">-- Chọn lớp --</option>';
         classes.forEach(c => {
           select.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
         });
-      } catch (err) {
-        console.error(err);
-        alert("Không thể tải danh sách lớp. Vui lòng kiểm tra lại.");
+      } catch (e) {
+        console.error(e);
       }
     }
 
-    async function loadStats() {
+    async function loadStudents() {
       const classId = document.getElementById('classSelect').value;
-      const loadingEl = document.getElementById('loading');
-      const emptyEl = document.getElementById('emptyState');
-      const tbody = document.getElementById('tableBody');
+      if (!classId) return;
 
-      if (!classId) {
-        tbody.innerHTML = '';
-        emptyEl.style.display = 'none';
-        return;
-      }
-
-      loadingEl.style.display = 'block';
-      emptyEl.style.display = 'none';
-      tbody.innerHTML = '';
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('detailPanel').style.display = 'none';
 
       try {
-        // Lấy danh sách học sinh của lớp
-        const { data: students, error: studentError } = await sb
+        // Lấy học sinh
+        const { data: students } = await sb
           .from('students')
           .select('student_id, name')
           .eq('class_id', classId)
           .order('name');
 
-        if (studentError) throw studentError;
-        if (!students || students.length === 0) {
-          emptyEl.textContent = "Lớp này chưa có học sinh.";
-          emptyEl.style.display = 'block';
-          return;
-        }
+        currentStudents = students || [];
 
-        const studentIds = students.map(s => s.student_id);
-
-        // Lấy tất cả health_logs của lớp
-        const { data: logs, error: logError } = await sb
+        // Lấy health_logs của lớp
+        const studentIds = currentStudents.map(s => s.student_id);
+        const { data: logs } = await sb
           .from('health_logs')
           .select('student_id, record_date, ai_comment')
           .in('student_id', studentIds);
 
-        if (logError) throw logError;
+        currentLogs = logs || [];
 
-        tbody.innerHTML = '';
-
-        students.forEach(student => {
-          const myLogs = logs.filter(l => l.student_id === student.student_id);
-          const totalLogs = myLogs.length;
-          
-          // Số lần AI đã phân tích (có ai_comment)
-          const aiCount = myLogs.filter(l => l.ai_comment && l.ai_comment.trim() !== '').length;
-
-          const latestDate = totalLogs 
-            ? myLogs.sort((a, b) => new Date(b.record_date) - new Date(a.record_date))[0].record_date 
-            : '-';
-
-          const row = `
-            <tr>
-              <td><strong>${student.name}</strong></td>
-              <td class="count">${totalLogs}</td>
-              <td class="ai-count">${aiCount}</td>
-              <td class="latest">${latestDate}</td>
-            </tr>
-          `;
-          tbody.innerHTML += row;
-        });
-
-        // Nếu không có dữ liệu nào
-        if (tbody.innerHTML === '') {
-          emptyEl.style.display = 'block';
-        }
-
+        renderStudentTable();
       } catch (err) {
         console.error(err);
-        alert("Có lỗi khi tải dữ liệu: " + err.message);
+        alert("Lỗi khi tải dữ liệu: " + err.message);
       } finally {
-        loadingEl.style.display = 'none';
+        document.getElementById('loading').style.display = 'none';
       }
     }
 
-    // Khởi chạy khi tải trang
+    function renderStudentTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      currentStudents.forEach(student => {
+        const myLogs = currentLogs.filter(l => l.student_id === student.student_id);
+        const totalLogs = myLogs.length;
+        const aiCount = myLogs.filter(l => l.ai_comment && l.ai_comment.trim() !== '').length;
+        const latest = totalLogs ? myLogs.sort((a,b) => new Date(b.record_date) - new Date(a.record_date))[0].record_date : '-';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="checkbox" class="student-checkbox" data-id="${student.student_id}" onchange="handleCheckboxChange()"></td>
+          <td class="student-name">${student.name}</td>
+          <td>${totalLogs}</td>
+          <td>${aiCount}</td>
+          <td>${latest}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function toggleSelectAll() {
+      const checked = document.getElementById('selectAll').checked;
+      document.querySelectorAll('.student-checkbox').forEach(cb => {
+        cb.checked = checked;
+      });
+      handleCheckboxChange();
+    }
+
+    function handleCheckboxChange() {
+      const checkedBoxes = Array.from(document.querySelectorAll('.student-checkbox:checked'));
+      
+      // Nếu chỉ chọn đúng 1 học sinh → hiển thị chi tiết
+      if (checkedBoxes.length === 1) {
+        const studentId = parseInt(checkedBoxes[0].dataset.id);
+        showStudentDetail(studentId);
+      } else {
+        document.getElementById('detailPanel').style.display = 'none';
+      }
+    }
+
+    async function showStudentDetail(studentId) {
+      const student = currentStudents.find(s => s.student_id === studentId);
+      if (!student) return;
+
+      const myLogs = currentLogs.filter(l => l.student_id === studentId)
+                               .sort((a,b) => new Date(b.record_date) - new Date(a.record_date));
+
+      const totalLogs = myLogs.length;
+      const aiCount = myLogs.filter(l => l.ai_comment && l.ai_comment.trim() !== '').length;
+
+      document.getElementById('selectedStudentName').textContent = student.name;
+      document.getElementById('totalLogs').textContent = totalLogs;
+      document.getElementById('aiCount').textContent = aiCount;
+
+      const commentsDiv = document.getElementById('aiComments');
+      commentsDiv.innerHTML = '';
+
+      if (aiCount === 0) {
+        commentsDiv.innerHTML = '<p style="color:#888; font-style:italic;">Chưa có nhận xét từ AI cho học sinh này.</p>';
+      } else {
+        myLogs.forEach(log => {
+          if (log.ai_comment) {
+            const div = document.createElement('div');
+            div.className = 'ai-comment';
+            div.innerHTML = `
+              <strong>📅 ${log.record_date}</strong><br>
+              ${log.ai_comment.replace(/\n/g, '<br>')}
+            `;
+            commentsDiv.appendChild(div);
+          }
+        });
+      }
+
+      document.getElementById('detailPanel').style.display = 'block';
+    }
+
+    // Khởi chạy
     init();
   </script>
 </body>
