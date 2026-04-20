@@ -23,17 +23,13 @@
   --card: #ffffff;
   --radius: 12px;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
   padding: 24px 20px 48px;
 }
-
-/* BACK */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -43,27 +39,13 @@ body {
   font-size: 14px;
   font-weight: 500;
   margin-bottom: 20px;
-  padding: 6px 0;
 }
 .back-link:hover { text-decoration: underline; }
+.page-header { text-align: center; margin-bottom: 28px; }
+.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+.page-header p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-/* HEADER */
-.page-header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-.page-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
-}
-.page-header p {
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-/* FILTER BOX */
+/* FILTER */
 .filter-box {
   background: var(--card);
   border: 1px solid var(--border);
@@ -75,9 +57,7 @@ body {
   gap: 16px;
   align-items: end;
 }
-
 .filter-group { display: flex; flex-direction: column; gap: 6px; }
-
 .filter-group label {
   font-size: 12px;
   font-weight: 600;
@@ -85,7 +65,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
-
 select {
   height: 40px;
   padding: 0 12px;
@@ -97,11 +76,7 @@ select {
   cursor: pointer;
   transition: border 0.2s;
 }
-select:focus {
-  outline: none;
-  border-color: var(--primary);
-  background: #fff;
-}
+select:focus { outline: none; border-color: var(--primary); background: #fff; }
 select:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* STATS */
@@ -111,7 +86,6 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   gap: 14px;
   margin-bottom: 24px;
 }
-
 .stat-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -119,22 +93,13 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   padding: 18px 16px;
   text-align: center;
 }
-.stat-card .stat-label {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-.stat-card .stat-val {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--primary);
-  line-height: 1;
-}
-.stat-card.s-done .stat-val   { color: var(--success); }
-.stat-card.s-miss .stat-val   { color: var(--danger); }
-.stat-card.s-score .stat-val  { color: var(--warning); }
+.stat-card .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.stat-card .stat-val   { font-size: 28px; font-weight: 700; color: var(--primary); line-height: 1; }
+.stat-card.s-done  .stat-val { color: var(--success); }
+.stat-card.s-miss  .stat-val { color: var(--danger); }
+.stat-card.s-score .stat-val { color: var(--warning); }
 
-/* LESSON INFO BANNER */
+/* BANNER */
 .lesson-banner {
   display: none;
   background: var(--primary-light);
@@ -147,14 +112,12 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   font-weight: 500;
 }
 
-/* CONTENT GRID */
+/* CONTENT */
 .content-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
 }
-
-/* TABLE CARD */
 .table-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -171,17 +134,8 @@ select:disabled { opacity: 0.5; cursor: not-allowed; }
   align-items: center;
   justify-content: space-between;
 }
-.card-header-right {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 400;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
+.card-header-right { font-size: 12px; color: var(--muted); font-weight: 400; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th {
   background: #f8f9fa;
   padding: 10px 14px;
@@ -201,7 +155,6 @@ tbody td {
 }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: #fafbff; }
-
 .comment-cell {
   max-width: 280px;
   white-space: normal;
@@ -209,21 +162,16 @@ tbody tr:hover { background: #fafbff; }
   color: #444;
   font-size: 12px;
 }
-
-/* BADGES */
 .badge {
   display: inline-block;
   padding: 3px 9px;
   border-radius: 99px;
   font-size: 11px;
   font-weight: 600;
-  white-space: nowrap;
 }
-.badge-done { background: var(--success-light); color: var(--success); }
-.badge-none { background: var(--danger-light);  color: var(--danger);  }
+.badge-done    { background: var(--success-light); color: var(--success); }
+.badge-none    { background: var(--danger-light);  color: var(--danger);  }
 .badge-pending { background: var(--warning-light); color: var(--warning); }
-
-/* SCORE CHIP */
 .score-chip {
   display: inline-block;
   min-width: 36px;
@@ -236,22 +184,13 @@ tbody tr:hover { background: #fafbff; }
 .score-high { background: var(--success-light); color: var(--success); }
 .score-mid  { background: var(--warning-light); color: var(--warning); }
 .score-low  { background: var(--danger-light);  color: var(--danger);  }
-
-/* CHART CARD */
 .chart-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px;
 }
-.chart-card h3 {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  color: var(--text);
-}
-
-/* EMPTY STATE */
+.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text); }
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -260,47 +199,10 @@ tbody tr:hover { background: #fafbff; }
 }
 .empty-icon { font-size: 32px; margin-bottom: 8px; }
 
-/* LOADING */
-.loading-row td {
-  text-align: center;
-  padding: 30px;
-  color: var(--muted);
-  font-style: italic;
-}
-
-/* TOPIC PILLS */
-.topic-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-.topic-pill {
-  padding: 6px 14px;
-  border-radius: 99px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.topic-pill:hover { border-color: var(--primary); color: var(--primary); }
-.topic-pill.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
-}
-
 @media (max-width: 900px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .stats-row    { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
-  .filter-box { grid-template-columns: 1fr; }
-}
-@media (max-width: 500px) {
-  .stats-row { grid-template-columns: 1fr 1fr; }
+  .filter-box   { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -313,7 +215,6 @@ tbody tr:hover { background: #fafbff; }
   <p>Theo dõi tiến độ và kết quả học sinh theo từng chủ đề, bài học</p>
 </div>
 
-<!-- FILTER -->
 <div class="filter-box">
   <div class="filter-group">
     <label>Lớp học</label>
@@ -321,14 +222,12 @@ tbody tr:hover { background: #fafbff; }
       <option value="">-- Chọn lớp --</option>
     </select>
   </div>
-
   <div class="filter-group">
     <label>Chủ đề</label>
     <select id="topicSelect" onchange="onTopicChange()" disabled>
       <option value="">-- Tất cả chủ đề --</option>
     </select>
   </div>
-
   <div class="filter-group">
     <label>Bài học</label>
     <select id="lessonSelect" onchange="onLessonChange()" disabled>
@@ -337,10 +236,8 @@ tbody tr:hover { background: #fafbff; }
   </div>
 </div>
 
-<!-- LESSON BANNER -->
 <div id="lessonBanner" class="lesson-banner"></div>
 
-<!-- STATS -->
 <div class="stats-row">
   <div class="stat-card">
     <div class="stat-label">Sĩ số lớp</div>
@@ -360,9 +257,7 @@ tbody tr:hover { background: #fafbff; }
   </div>
 </div>
 
-<!-- CONTENT -->
 <div class="content-grid">
-
   <div class="table-card">
     <div class="card-header">
       Danh sách học sinh
@@ -395,72 +290,71 @@ tbody tr:hover { background: #fafbff; }
       Chưa có dữ liệu điểm
     </div>
   </div>
-
 </div>
 
 <script>
 /* =====================================================
-   CONFIG SUPABASE
+   CONFIG
    ===================================================== */
 const SUPA_URL = 'https://kisogvsqpimhlqidkekf.supabase.co';
-const SUPA_KEY = 'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A'; // ← thay legacy anon key nếu cần
+const SUPA_KEY = 'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 /* =====================================================
-   CẤU TRÚC CHỦ ĐỀ (hard-code từ chương trình học)
-   lesson_id trong DB phải khớp với id bên dưới
+   TOPICS — lesson_id dạng [chủ đề * 100 + bài]
+   Ví dụ: Chủ đề 5 Bài 2 = 502, Chủ đề 1 Bài 1 = 101
    ===================================================== */
 const TOPICS = [
   {
     id: 1,
     name: "Chủ đề 1. Lịch sử và điều luật cầu lông",
     lessons: [
-      { id: 1, name: "Bài 1. Lịch sử ra đời và phát triển môn cầu lông" },
-      { id: 2, name: "Bài 2. Một số điều luật trong thi đấu cầu lông" }
+      { id: 101, name: "Bài 1. Lịch sử ra đời và phát triển môn cầu lông" },
+      { id: 102, name: "Bài 2. Một số điều luật trong thi đấu cầu lông" }
     ]
   },
   {
     id: 2,
     name: "Chủ đề 2. Kỹ thuật di chuyển",
     lessons: [
-      { id: 3, name: "Bài 1. Di chuyển đơn bước" },
-      { id: 4, name: "Bài 2. Di chuyển đa bước" }
+      { id: 201, name: "Bài 1. Di chuyển đơn bước" },
+      { id: 202, name: "Bài 2. Di chuyển đa bước" }
     ]
   },
   {
     id: 3,
     name: "Chủ đề 3. Kỹ thuật đánh cầu thấp tay",
     lessons: [
-      { id: 5, name: "Bài 1. Kỹ thuật đánh cầu thấp thuận tay" },
-      { id: 6, name: "Bài 2. Kỹ thuật đánh cầu thấp trái tay" },
-      { id: 7, name: "Bài 3. Di chuyển tiến đánh cầu thấp tay" },
-      { id: 8, name: "Bài 4. Di chuyển ngang đánh cầu thấp tay" }
+      { id: 301, name: "Bài 1. Kỹ thuật đánh cầu thấp thuận tay" },
+      { id: 302, name: "Bài 2. Kỹ thuật đánh cầu thấp trái tay" },
+      { id: 303, name: "Bài 3. Di chuyển tiến đánh cầu thấp tay" },
+      { id: 304, name: "Bài 4. Di chuyển ngang đánh cầu thấp tay" }
     ]
   },
   {
     id: 4,
     name: "Chủ đề 4. Kỹ thuật giao cầu",
     lessons: [
-      { id: 9,  name: "Bài 1. Giao cầu thuận tay" },
-      { id: 10, name: "Bài 2. Giao cầu trái tay" }
+      { id: 401, name: "Bài 1. Giao cầu thuận tay" },
+      { id: 402, name: "Bài 2. Giao cầu trái tay" }
     ]
   },
   {
     id: 5,
     name: "Chủ đề 5. Kỹ thuật đánh cầu cao thuận tay",
     lessons: [
-      { id: 11, name: "Bài 1. Kỹ thuật đánh cầu cao thuận tay" },
-      { id: 12, name: "Bài 2. Di chuyển lùi đánh cầu cao thuận tay" },
-      { id: 13, name: "Bài 3. Di chuyển ngang đánh cầu cao thuận tay" }
+      { id: 501, name: "Bài 1. Kỹ thuật đánh cầu cao thuận tay" },
+      { id: 502, name: "Bài 2. Di chuyển lùi đánh cầu cao thuận tay" },
+      { id: 503, name: "Bài 3. Di chuyển ngang đánh cầu cao thuận tay" }
     ]
   },
   {
     id: 6,
     name: "Chủ đề 6. Kỹ thuật đập cầu",
     lessons: [
-      { id: 14, name: "Bài 1. Đập cầu thuận tay" },
-      { id: 15, name: "Bài 2. Di chuyển lùi đập cầu thuận tay" },
-      { id: 16, name: "Bài 3. Phối hợp kỹ thuật di chuyển ngang đập cầu thuận tay" }
+      { id: 601, name: "Bài 1. Đập cầu thuận tay" },
+      { id: 602, name: "Bài 2. Di chuyển lùi đập cầu thuận tay" },
+      { id: 603, name: "Bài 3. Phối hợp kỹ thuật di chuyển ngang đập cầu thuận tay" }
     ]
   }
 ];
@@ -468,39 +362,21 @@ const TOPICS = [
 /* =====================================================
    STATE
    ===================================================== */
-let allStudents  = [];   // học sinh của lớp hiện tại
-let allSubs      = [];   // tất cả submissions của lớp (không lọc)
-let dbLessons    = [];   // lessons từ DB
-let myChart      = null;
-let currentClass = "";
-let currentTopic = "";
-let currentLesson= "";
+let allStudents   = [];
+let allSubs       = [];
+let currentClass  = "";
+let currentTopic  = "";
+let currentLesson = "";
+let myChart       = null;
 
 /* =====================================================
-   KHỞI TẠO
+   INIT
    ===================================================== */
 async function init() {
-  await loadDbLessons();
   await loadClasses();
   buildTopicSelect();
 }
 
-/* Load lessons từ DB để có title chính xác */
-async function loadDbLessons() {
-  const { data, error } = await sb
-    .from('lessons')
-    .select('lesson_id, title, description')
-    .order('lesson_id');
-
-  if (error) {
-    console.warn("Không load được lessons từ DB, dùng hard-code:", error.message);
-    return;
-  }
-  dbLessons = data || [];
-  console.log("DB lessons:", dbLessons.length);
-}
-
-/* Load danh sách lớp */
 async function loadClasses() {
   const { data, error } = await sb
     .from('classes')
@@ -515,7 +391,6 @@ async function loadClasses() {
   });
 }
 
-/* Build topic select từ TOPICS */
 function buildTopicSelect() {
   const sel = document.getElementById('topicSelect');
   sel.innerHTML = '<option value="">-- Tất cả chủ đề --</option>';
@@ -525,15 +400,15 @@ function buildTopicSelect() {
 }
 
 /* =====================================================
-   EVENT HANDLERS
+   EVENTS
    ===================================================== */
 async function onClassChange() {
   currentClass  = document.getElementById('classSelect').value;
   currentTopic  = "";
   currentLesson = "";
 
-  document.getElementById('topicSelect').value  = "";
-  document.getElementById('lessonSelect').value = "";
+  document.getElementById('topicSelect').value    = "";
+  document.getElementById('lessonSelect').value   = "";
   document.getElementById('topicSelect').disabled  = !currentClass;
   document.getElementById('lessonSelect').disabled = true;
 
@@ -556,7 +431,7 @@ function onTopicChange() {
 
   buildLessonSelect(currentTopic);
   document.getElementById('lessonSelect').disabled = !currentTopic;
-  document.getElementById('lessonSelect').value = "";
+  document.getElementById('lessonSelect').value    = "";
 
   hideBanner();
   renderView();
@@ -568,26 +443,21 @@ function onLessonChange() {
   renderView();
 }
 
-/* Build lesson select theo topic đã chọn */
 function buildLessonSelect(topicId) {
   const sel = document.getElementById('lessonSelect');
   sel.innerHTML = '<option value="">-- Tất cả bài trong chủ đề --</option>';
-
   if (!topicId) return;
 
   const topic = TOPICS.find(t => t.id == topicId);
   if (!topic) return;
 
   topic.lessons.forEach(l => {
-    // Ưu tiên dùng title từ DB nếu có
-    const dbLesson = dbLessons.find(d => d.lesson_id == l.id);
-    const title    = (dbLesson && dbLesson.title) ? dbLesson.title : l.name;
-    sel.innerHTML += `<option value="${l.id}">${title}</option>`;
+    sel.innerHTML += `<option value="${l.id}">${l.name}</option>`;
   });
 }
 
 /* =====================================================
-   LOAD DATA TỪ SUPABASE
+   LOAD DATA
    ===================================================== */
 async function loadClassData() {
   // Load học sinh
@@ -600,14 +470,11 @@ async function loadClassData() {
   if (sErr) { console.error(sErr); return; }
   allStudents = students || [];
 
-  if (allStudents.length === 0) {
-    allSubs = [];
-    return;
-  }
+  if (allStudents.length === 0) { allSubs = []; return; }
 
   const ids = allStudents.map(s => s.student_id);
 
-  // Load tất cả submissions của lớp (không lọc lesson ở đây, lọc ở client)
+  // Load TẤT CẢ submissions của lớp — lọc ở client
   const { data: subs, error: subErr } = await sb
     .from('submissions')
     .select('submission_id, student_id, lesson_id, score, summary, video_url, submitted_at, status')
@@ -616,25 +483,31 @@ async function loadClassData() {
 
   if (subErr) { console.error(subErr); return; }
   allSubs = subs || [];
+
+  console.log("Tổng submissions:", allSubs.length);
+  console.log("Lesson IDs hiện có:", [...new Set(allSubs.map(s => s.lesson_id))]);
 }
 
 /* =====================================================
-   LỌC SUBMISSIONS THEO CHỦ ĐỀ / BÀI
+   LỌC SUBMISSIONS
    ===================================================== */
 function getFilteredSubs() {
+  // Không lọc gì
   if (!currentLesson && !currentTopic) return allSubs;
 
-  // Lấy danh sách lesson_id cần lọc
   let lessonIds = [];
 
   if (currentLesson) {
+    // Lọc đúng 1 bài
     lessonIds = [parseInt(currentLesson)];
   } else if (currentTopic) {
+    // Lọc theo chủ đề → lấy tất cả bài của chủ đề đó
     const topic = TOPICS.find(t => t.id == currentTopic);
     lessonIds   = topic ? topic.lessons.map(l => l.id) : [];
   }
 
-  return allSubs.filter(s => lessonIds.includes(s.lesson_id));
+  console.log("Lọc lesson_ids:", lessonIds);
+  return allSubs.filter(s => lessonIds.includes(Number(s.lesson_id)));
 }
 
 /* =====================================================
@@ -662,7 +535,6 @@ function updateTableSubtitle() {
   }
 }
 
-/* Render bảng học sinh */
 function renderTable(students, subs) {
   const tbody = document.getElementById('studentList');
 
@@ -675,29 +547,26 @@ function renderTable(students, subs) {
   let html = "";
 
   students.forEach(student => {
-    // Lấy submission mới nhất của học sinh trong bộ lọc hiện tại
-    const mySub = subs.find(s => s.student_id === student.student_id);
+    const mySub  = subs.find(s => s.student_id === student.student_id);
     const hasSub = !!mySub;
 
     const score   = hasSub && mySub.score != null ? Number(mySub.score) : null;
     const comment = hasSub ? (mySub.summary || "Chưa có nhận xét") : "—";
-    const status  = mySub ? (mySub.status || "done") : null;
+    const status  = mySub ? (mySub.status || "completed") : null;
 
-    // Score chip color
+    // Score chip
     let scoreChip = "—";
     if (score !== null) {
-      let cls = score >= 8 ? "score-high" : score >= 5 ? "score-mid" : "score-low";
+      const cls = score >= 8 ? "score-high" : score >= 5 ? "score-mid" : "score-low";
       scoreChip = `<span class="score-chip ${cls}">${score}</span>`;
     }
 
-    // Badge
+    // Badge trạng thái
     let badge = `<span class="badge badge-none">Chưa nộp</span>`;
     if (hasSub) {
-      if (status === "pending") {
-        badge = `<span class="badge badge-pending">Đang chờ</span>`;
-      } else {
-        badge = `<span class="badge badge-done">Đã nộp</span>`;
-      }
+      badge = status === "pending"
+        ? `<span class="badge badge-pending">Đang chờ</span>`
+        : `<span class="badge badge-done">Đã nộp</span>`;
     }
 
     // Video
@@ -718,15 +587,12 @@ function renderTable(students, subs) {
   tbody.innerHTML = html;
 }
 
-/* Cập nhật thống kê */
 function updateStats(students, subs) {
-  const total     = students.length;
-  // Đếm học sinh đã có submission (không trùng)
-  const doneIds   = new Set(subs.map(s => s.student_id));
-  const done      = doneIds.size;
-  const pending   = total - done;
+  const total   = students.length;
+  const doneIds = new Set(subs.map(s => s.student_id));
+  const done    = doneIds.size;
 
-  const scores    = subs
+  const scores = subs
     .filter(s => s.score != null)
     .map(s => Number(s.score));
 
@@ -736,23 +602,18 @@ function updateStats(students, subs) {
 
   document.getElementById('totalStudents').textContent = total;
   document.getElementById('doneCount').textContent     = done;
-  document.getElementById('pendingCount').textContent  = pending;
+  document.getElementById('pendingCount').textContent  = total - done;
   document.getElementById('avgScore').textContent      = avg;
 }
 
-/* Reset stats */
 function resetStats() {
   ['totalStudents','doneCount','pendingCount','avgScore'].forEach(id => {
     document.getElementById(id).textContent = "—";
   });
 }
 
-/* Render biểu đồ */
 function renderChart(subs) {
-  const scores = subs
-    .filter(s => s.score != null)
-    .map(s => Math.round(Number(s.score)));
-
+  const scores  = subs.filter(s => s.score != null).map(s => Math.round(Number(s.score)));
   const ctx     = document.getElementById('scoreChart');
   const isEmpty = scores.length === 0;
 
@@ -796,23 +657,16 @@ function renderChart(subs) {
   });
 }
 
-/* Banner bài học */
 function showBanner() {
   const banner = document.getElementById('lessonBanner');
   if (!currentLesson) { hideBanner(); return; }
 
   const topic  = TOPICS.find(t => t.lessons.some(l => l.id == currentLesson));
   const lesson = topic ? topic.lessons.find(l => l.id == currentLesson) : null;
-
   if (!lesson) { hideBanner(); return; }
 
-  // Ưu tiên dùng title từ DB
-  const dbL  = dbLessons.find(d => d.lesson_id == currentLesson);
-  const title = (dbL && dbL.title) ? dbL.title : lesson.name;
-  const desc  = (dbL && dbL.description) ? ` — ${dbL.description}` : "";
-
   banner.style.display = 'block';
-  banner.innerHTML = `📖 <b>${topic.name}</b> &nbsp;›&nbsp; ${title}${desc}`;
+  banner.innerHTML = `📖 <b>${topic.name}</b> &nbsp;›&nbsp; ${lesson.name}`;
 }
 
 function hideBanner() {
