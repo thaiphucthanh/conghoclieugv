@@ -1,310 +1,828 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Quản lý lớp học - nhận xét của AI</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 30px;
-            background: #f4f6f9;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản lý lớp học - Nhận xét AI</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --primary: #1a73e8;
+  --primary-light: #e8f0fe;
+  --success: #188038;
+  --success-light: #e6f4ea;
+  --danger: #c5221f;
+  --danger-light: #fce8e6;
+  --warning: #e37400;
+  --warning-light: #fef7e0;
+  --text: #202124;
+  --muted: #5f6368;
+  --border: #e0e0e0;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --radius: 12px;
+}
 
-        .container {
-            max-width: 1300px;
-            margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 24px 20px 48px;
+}
 
-        .filter-box {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+/* BACK */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  padding: 6px 0;
+}
+.back-link:hover { text-decoration: underline; }
 
-        select {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            width: 250px;
-        }
+/* HEADER */
+.page-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+.page-header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
 
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+/* FILTER BOX */
+.filter-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: end;
+}
 
-        .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #eee;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
 
-        .stat-card b {
-            display: block;
-            font-size: 28px;
-            color: #3498db;
-        }
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
 
-        .content-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-        }
+select {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fafafa;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border 0.2s;
+}
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #fff;
+}
+select:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 14px;
-        }
+/* STATS */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
 
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            text-align: left;
-            vertical-align: top;
-        }
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  text-align: center;
+}
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.stat-card .stat-val {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+.stat-card.s-done .stat-val   { color: var(--success); }
+.stat-card.s-miss .stat-val   { color: var(--danger); }
+.stat-card.s-score .stat-val  { color: var(--warning); }
 
-        th {
-            background: #f8f9fa;
-            color: #666;
-        }
+/* LESSON INFO BANNER */
+.lesson-banner {
+  display: none;
+  background: var(--primary-light);
+  border: 1px solid #c5d9f7;
+  border-radius: var(--radius);
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 500;
+}
 
-        .comment-cell {
-            max-width: 320px;
-            white-space: normal;
-            line-height: 1.5;
-            color: #444;
-            font-size: 13px;
-        }
+/* CONTENT GRID */
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
 
-        .badge-done {
-            background: #dcfce7;
-            color: #166534;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
+/* TABLE CARD */
+.table-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.table-card .card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-header-right {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
 
-        .badge-none {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead th {
+  background: #f8f9fa;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+  color: var(--text);
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbff; }
 
-        .chart-container {
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #eee;
-        }
-    </style>
+.comment-cell {
+  max-width: 280px;
+  white-space: normal;
+  line-height: 1.5;
+  color: #444;
+  font-size: 12px;
+}
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-done { background: var(--success-light); color: var(--success); }
+.badge-none { background: var(--danger-light);  color: var(--danger);  }
+.badge-pending { background: var(--warning-light); color: var(--warning); }
+
+/* SCORE CHIP */
+.score-chip {
+  display: inline-block;
+  min-width: 36px;
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.score-high { background: var(--success-light); color: var(--success); }
+.score-mid  { background: var(--warning-light); color: var(--warning); }
+.score-low  { background: var(--danger-light);  color: var(--danger);  }
+
+/* CHART CARD */
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+.chart-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+/* LOADING */
+.loading-row td {
+  text-align: center;
+  padding: 30px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* TOPIC PILLS */
+.topic-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.topic-pill {
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.topic-pill:hover { border-color: var(--primary); color: var(--primary); }
+.topic-pill.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .content-grid { grid-template-columns: 1fr; }
+  .filter-box { grid-template-columns: 1fr; }
+}
+@media (max-width: 500px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
 </head>
 <body>
-<div class="back" style="padding-bottom: 20px;">
-    <a href="index.html" style="text-decoration:none; color: var(--primary); font-size: 1.2rem; margin-bottom: 8px;">← Quay lại Trang chủ GV</a>
-    </div>
-<div class="container">
-    <h1>📋 Hệ thống quản lý học liệu</h1>
 
-    <div class="filter-box">
-        <label>Chọn lớp học:</label>
-        <select id="classSelect" onchange="loadDataByClass()">
-            <option value="">-- Chọn lớp học --</option>
-        </select>
-    </div>
+<a class="back-link" href="index.html">← Quay lại trang chủ GV</a>
 
-    <div class="stats-row">
-        <div class="stat-card">Sĩ số lớp<b id="totalStudents">0</b></div>
-        <div class="stat-card">Đã nộp bài<b id="doneCount">0</b></div>
-        <div class="stat-card">Chưa nộp bài<b id="pendingCount">0</b></div>
-        <div class="stat-card">Điểm TB lớp<b id="avgScore">0</b></div>
-    </div>
+<div class="page-header">
+  <h1>📋 Hệ thống quản lý học liệu</h1>
+  <p>Theo dõi tiến độ và kết quả học sinh theo từng chủ đề, bài học</p>
+</div>
 
-    <div class="content-grid">
-        <div>
-            <h3>Danh sách học sinh lớp</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Học sinh</th>
-                        <th>Trạng thái</th>
-                        <th>Điểm AI</th>
-                        <th>Nhận xét AI</th>
-                        <th>Video</th>
-                    </tr>
-                </thead>
-                <tbody id="studentList"></tbody>
-            </table>
-        </div>
+<!-- FILTER -->
+<div class="filter-box">
+  <div class="filter-group">
+    <label>Lớp học</label>
+    <select id="classSelect" onchange="onClassChange()">
+      <option value="">-- Chọn lớp --</option>
+    </select>
+  </div>
 
-        <div class="chart-container">
-            <h3>Phổ điểm của lớp</h3>
-            <canvas id="scoreChart"></canvas>
-        </div>
+  <div class="filter-group">
+    <label>Chủ đề</label>
+    <select id="topicSelect" onchange="onTopicChange()" disabled>
+      <option value="">-- Tất cả chủ đề --</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label>Bài học</label>
+    <select id="lessonSelect" onchange="onLessonChange()" disabled>
+      <option value="">-- Tất cả bài --</option>
+    </select>
+  </div>
+</div>
+
+<!-- LESSON BANNER -->
+<div id="lessonBanner" class="lesson-banner"></div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">Sĩ số lớp</div>
+    <div class="stat-val" id="totalStudents">—</div>
+  </div>
+  <div class="stat-card s-done">
+    <div class="stat-label">Đã nộp bài</div>
+    <div class="stat-val" id="doneCount">—</div>
+  </div>
+  <div class="stat-card s-miss">
+    <div class="stat-label">Chưa nộp bài</div>
+    <div class="stat-val" id="pendingCount">—</div>
+  </div>
+  <div class="stat-card s-score">
+    <div class="stat-label">Điểm TB lớp</div>
+    <div class="stat-val" id="avgScore">—</div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-grid">
+
+  <div class="table-card">
+    <div class="card-header">
+      Danh sách học sinh
+      <span class="card-header-right" id="tableSubtitle"></span>
     </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Học sinh</th>
+          <th>Trạng thái</th>
+          <th>Điểm AI</th>
+          <th>Nhận xét AI</th>
+          <th>Video</th>
+        </tr>
+      </thead>
+      <tbody id="studentList">
+        <tr><td colspan="5" class="empty-state">
+          <div class="empty-icon">🏫</div>
+          Chọn lớp học để xem danh sách
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-card">
+    <h3>📊 Phổ điểm của lớp</h3>
+    <canvas id="scoreChart"></canvas>
+    <div id="chartEmpty" class="empty-state" style="display:none;">
+      <div class="empty-icon">📈</div>
+      Chưa có dữ liệu điểm
+    </div>
+  </div>
+
 </div>
 
 <script>
-    const supabaseUrl = 'https://kisogvsqpimhlqidkekf.supabase.co';
-    const supabaseKey = 'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A';
-    const sb = supabase.createClient(supabaseUrl, supabaseKey);
+/* =====================================================
+   CONFIG SUPABASE
+   ===================================================== */
+const SUPA_URL = 'https://kisogvsqpimhlqidkekf.supabase.co';
+const SUPA_KEY = 'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A'; // ← thay legacy anon key nếu cần
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-    let myChart;
+/* =====================================================
+   CẤU TRÚC CHỦ ĐỀ (hard-code từ chương trình học)
+   lesson_id trong DB phải khớp với id bên dưới
+   ===================================================== */
+const TOPICS = [
+  {
+    id: 1,
+    name: "Chủ đề 1. Lịch sử và điều luật cầu lông",
+    lessons: [
+      { id: 1, name: "Bài 1. Lịch sử ra đời và phát triển môn cầu lông" },
+      { id: 2, name: "Bài 2. Một số điều luật trong thi đấu cầu lông" }
+    ]
+  },
+  {
+    id: 2,
+    name: "Chủ đề 2. Kỹ thuật di chuyển",
+    lessons: [
+      { id: 3, name: "Bài 1. Di chuyển đơn bước" },
+      { id: 4, name: "Bài 2. Di chuyển đa bước" }
+    ]
+  },
+  {
+    id: 3,
+    name: "Chủ đề 3. Kỹ thuật đánh cầu thấp tay",
+    lessons: [
+      { id: 5, name: "Bài 1. Kỹ thuật đánh cầu thấp thuận tay" },
+      { id: 6, name: "Bài 2. Kỹ thuật đánh cầu thấp trái tay" },
+      { id: 7, name: "Bài 3. Di chuyển tiến đánh cầu thấp tay" },
+      { id: 8, name: "Bài 4. Di chuyển ngang đánh cầu thấp tay" }
+    ]
+  },
+  {
+    id: 4,
+    name: "Chủ đề 4. Kỹ thuật giao cầu",
+    lessons: [
+      { id: 9,  name: "Bài 1. Giao cầu thuận tay" },
+      { id: 10, name: "Bài 2. Giao cầu trái tay" }
+    ]
+  },
+  {
+    id: 5,
+    name: "Chủ đề 5. Kỹ thuật đánh cầu cao thuận tay",
+    lessons: [
+      { id: 11, name: "Bài 1. Kỹ thuật đánh cầu cao thuận tay" },
+      { id: 12, name: "Bài 2. Di chuyển lùi đánh cầu cao thuận tay" },
+      { id: 13, name: "Bài 3. Di chuyển ngang đánh cầu cao thuận tay" }
+    ]
+  },
+  {
+    id: 6,
+    name: "Chủ đề 6. Kỹ thuật đập cầu",
+    lessons: [
+      { id: 14, name: "Bài 1. Đập cầu thuận tay" },
+      { id: 15, name: "Bài 2. Di chuyển lùi đập cầu thuận tay" },
+      { id: 16, name: "Bài 3. Phối hợp kỹ thuật di chuyển ngang đập cầu thuận tay" }
+    ]
+  }
+];
 
-    async function init() {
-        const { data, error } = await sb
-            .from('classes')
-            .select('*')
-            .order('name');
+/* =====================================================
+   STATE
+   ===================================================== */
+let allStudents  = [];   // học sinh của lớp hiện tại
+let allSubs      = [];   // tất cả submissions của lớp (không lọc)
+let dbLessons    = [];   // lessons từ DB
+let myChart      = null;
+let currentClass = "";
+let currentTopic = "";
+let currentLesson= "";
 
-        if (error) {
-            console.error(error);
-            return;
-        }
+/* =====================================================
+   KHỞI TẠO
+   ===================================================== */
+async function init() {
+  await loadDbLessons();
+  await loadClasses();
+  buildTopicSelect();
+}
 
-        const select = document.getElementById('classSelect');
+/* Load lessons từ DB để có title chính xác */
+async function loadDbLessons() {
+  const { data, error } = await sb
+    .from('lessons')
+    .select('lesson_id, title, description')
+    .order('lesson_id');
 
-        data.forEach(c => {
-            select.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
-        });
+  if (error) {
+    console.warn("Không load được lessons từ DB, dùng hard-code:", error.message);
+    return;
+  }
+  dbLessons = data || [];
+  console.log("DB lessons:", dbLessons.length);
+}
+
+/* Load danh sách lớp */
+async function loadClasses() {
+  const { data, error } = await sb
+    .from('classes')
+    .select('class_id, name')
+    .order('name');
+
+  if (error) { console.error(error); return; }
+
+  const sel = document.getElementById('classSelect');
+  (data || []).forEach(c => {
+    sel.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
+  });
+}
+
+/* Build topic select từ TOPICS */
+function buildTopicSelect() {
+  const sel = document.getElementById('topicSelect');
+  sel.innerHTML = '<option value="">-- Tất cả chủ đề --</option>';
+  TOPICS.forEach(t => {
+    sel.innerHTML += `<option value="${t.id}">${t.name}</option>`;
+  });
+}
+
+/* =====================================================
+   EVENT HANDLERS
+   ===================================================== */
+async function onClassChange() {
+  currentClass  = document.getElementById('classSelect').value;
+  currentTopic  = "";
+  currentLesson = "";
+
+  document.getElementById('topicSelect').value  = "";
+  document.getElementById('lessonSelect').value = "";
+  document.getElementById('topicSelect').disabled  = !currentClass;
+  document.getElementById('lessonSelect').disabled = true;
+
+  hideBanner();
+  resetStats();
+
+  if (!currentClass) {
+    renderTable([], []);
+    renderChart([]);
+    return;
+  }
+
+  await loadClassData();
+  renderView();
+}
+
+function onTopicChange() {
+  currentTopic  = document.getElementById('topicSelect').value;
+  currentLesson = "";
+
+  buildLessonSelect(currentTopic);
+  document.getElementById('lessonSelect').disabled = !currentTopic;
+  document.getElementById('lessonSelect').value = "";
+
+  hideBanner();
+  renderView();
+}
+
+function onLessonChange() {
+  currentLesson = document.getElementById('lessonSelect').value;
+  showBanner();
+  renderView();
+}
+
+/* Build lesson select theo topic đã chọn */
+function buildLessonSelect(topicId) {
+  const sel = document.getElementById('lessonSelect');
+  sel.innerHTML = '<option value="">-- Tất cả bài trong chủ đề --</option>';
+
+  if (!topicId) return;
+
+  const topic = TOPICS.find(t => t.id == topicId);
+  if (!topic) return;
+
+  topic.lessons.forEach(l => {
+    // Ưu tiên dùng title từ DB nếu có
+    const dbLesson = dbLessons.find(d => d.lesson_id == l.id);
+    const title    = (dbLesson && dbLesson.title) ? dbLesson.title : l.name;
+    sel.innerHTML += `<option value="${l.id}">${title}</option>`;
+  });
+}
+
+/* =====================================================
+   LOAD DATA TỪ SUPABASE
+   ===================================================== */
+async function loadClassData() {
+  // Load học sinh
+  const { data: students, error: sErr } = await sb
+    .from('students')
+    .select('student_id, name')
+    .eq('class_id', currentClass)
+    .order('name');
+
+  if (sErr) { console.error(sErr); return; }
+  allStudents = students || [];
+
+  if (allStudents.length === 0) {
+    allSubs = [];
+    return;
+  }
+
+  const ids = allStudents.map(s => s.student_id);
+
+  // Load tất cả submissions của lớp (không lọc lesson ở đây, lọc ở client)
+  const { data: subs, error: subErr } = await sb
+    .from('submissions')
+    .select('submission_id, student_id, lesson_id, score, summary, video_url, submitted_at, status')
+    .in('student_id', ids)
+    .order('submitted_at', { ascending: false });
+
+  if (subErr) { console.error(subErr); return; }
+  allSubs = subs || [];
+}
+
+/* =====================================================
+   LỌC SUBMISSIONS THEO CHỦ ĐỀ / BÀI
+   ===================================================== */
+function getFilteredSubs() {
+  if (!currentLesson && !currentTopic) return allSubs;
+
+  // Lấy danh sách lesson_id cần lọc
+  let lessonIds = [];
+
+  if (currentLesson) {
+    lessonIds = [parseInt(currentLesson)];
+  } else if (currentTopic) {
+    const topic = TOPICS.find(t => t.id == currentTopic);
+    lessonIds   = topic ? topic.lessons.map(l => l.id) : [];
+  }
+
+  return allSubs.filter(s => lessonIds.includes(s.lesson_id));
+}
+
+/* =====================================================
+   RENDER
+   ===================================================== */
+function renderView() {
+  const filteredSubs = getFilteredSubs();
+  renderTable(allStudents, filteredSubs);
+  renderChart(filteredSubs);
+  updateStats(allStudents, filteredSubs);
+  updateTableSubtitle();
+}
+
+function updateTableSubtitle() {
+  const el = document.getElementById('tableSubtitle');
+  if (currentLesson) {
+    const topic  = TOPICS.find(t => t.lessons.some(l => l.id == currentLesson));
+    const lesson = topic ? topic.lessons.find(l => l.id == currentLesson) : null;
+    el.textContent = lesson ? lesson.name : "";
+  } else if (currentTopic) {
+    const topic = TOPICS.find(t => t.id == currentTopic);
+    el.textContent = topic ? topic.name : "";
+  } else {
+    el.textContent = "Tất cả bài học";
+  }
+}
+
+/* Render bảng học sinh */
+function renderTable(students, subs) {
+  const tbody = document.getElementById('studentList');
+
+  if (!students || students.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">
+      <div class="empty-icon">🏫</div>Chọn lớp học để xem danh sách</td></tr>`;
+    return;
+  }
+
+  let html = "";
+
+  students.forEach(student => {
+    // Lấy submission mới nhất của học sinh trong bộ lọc hiện tại
+    const mySub = subs.find(s => s.student_id === student.student_id);
+    const hasSub = !!mySub;
+
+    const score   = hasSub && mySub.score != null ? Number(mySub.score) : null;
+    const comment = hasSub ? (mySub.summary || "Chưa có nhận xét") : "—";
+    const status  = mySub ? (mySub.status || "done") : null;
+
+    // Score chip color
+    let scoreChip = "—";
+    if (score !== null) {
+      let cls = score >= 8 ? "score-high" : score >= 5 ? "score-mid" : "score-low";
+      scoreChip = `<span class="score-chip ${cls}">${score}</span>`;
     }
 
-    async function loadDataByClass() {
-        const classId = document.getElementById('classSelect').value;
-        if (!classId) return;
-
-        const { data: students, error: studentError } = await sb
-            .from('students')
-            .select('*')
-            .eq('class_id', classId)
-            .order('name');
-
-        if (studentError) {
-            console.error(studentError);
-            return;
-        }
-
-        const studentIds = students.map(s => s.student_id);
-
-        const { data: subs, error: subError } = await sb
-            .from('submissions')
-            .select('student_id, score, summary, video_url, submitted_at')
-            .in('student_id', studentIds)
-            .order('submitted_at', { ascending: false });
-
-        if (subError) {
-            console.error(subError);
-            return;
-        }
-
-        let totalScore = 0;
-        let scoreCounts = Array(11).fill(0);
-
-        const listBody = document.getElementById('studentList');
-        listBody.innerHTML = '';
-
-        students.forEach(student => {
-
-            // lấy submission mới nhất của học sinh
-            const mySub = subs.find(sub => sub.student_id === student.student_id);
-
-            const hasSub = !!mySub;
-            const score = hasSub ? Number(mySub.score || 0) : null;
-            const comment = hasSub
-                ? (mySub.summary || 'Không có nhận xét')
-                : '-';
-
-            if (score !== null) {
-                totalScore += score;
-                scoreCounts[Math.round(score)]++;
-            }
-
-            listBody.innerHTML += `
-                <tr>
-                    <td>${student.name}</td>
-                    <td>
-                        <span class="${hasSub ? 'badge-done' : 'badge-none'}">
-                            ${hasSub ? 'Đã nộp' : 'Chưa nộp'}
-                        </span>
-                    </td>
-                    <td>${score !== null ? score : '-'}</td>
-                    <td class="comment-cell">${comment}</td>
-                    <td>
-                        ${hasSub
-                            ? `<a href="${mySub.video_url}" target="_blank">🔗 Xem</a>`
-                            : '-'}
-                    </td>
-                </tr>
-            `;
-        });
-
-        const submittedCount = subs.length;
-
-        document.getElementById('totalStudents').innerText = students.length;
-        document.getElementById('doneCount').innerText = submittedCount;
-        document.getElementById('pendingCount').innerText = students.length - submittedCount;
-        document.getElementById('avgScore').innerText = submittedCount
-            ? (totalScore / submittedCount).toFixed(1)
-            : 0;
-
-        renderChart(scoreCounts);
+    // Badge
+    let badge = `<span class="badge badge-none">Chưa nộp</span>`;
+    if (hasSub) {
+      if (status === "pending") {
+        badge = `<span class="badge badge-pending">Đang chờ</span>`;
+      } else {
+        badge = `<span class="badge badge-done">Đã nộp</span>`;
+      }
     }
 
-    function renderChart(counts) {
-        const ctx = document.getElementById('scoreChart').getContext('2d');
+    // Video
+    const video = (hasSub && mySub.video_url)
+      ? `<a href="${mySub.video_url}" target="_blank" style="color:var(--primary);font-size:12px;">▶ Xem</a>`
+      : "—";
 
-        if (myChart) myChart.destroy();
+    html += `
+      <tr>
+        <td style="font-weight:500;">${student.name}</td>
+        <td>${badge}</td>
+        <td>${scoreChip}</td>
+        <td class="comment-cell">${comment}</td>
+        <td>${video}</td>
+      </tr>`;
+  });
 
-        myChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['0','1','2','3','4','5','6','7','8','9','10'],
-                datasets: [{
-                    label: 'Số lượng học sinh',
-                    data: counts,
-                    backgroundColor: '#3498db'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
-                    }
-                }
-            }
-        });
+  tbody.innerHTML = html;
+}
+
+/* Cập nhật thống kê */
+function updateStats(students, subs) {
+  const total     = students.length;
+  // Đếm học sinh đã có submission (không trùng)
+  const doneIds   = new Set(subs.map(s => s.student_id));
+  const done      = doneIds.size;
+  const pending   = total - done;
+
+  const scores    = subs
+    .filter(s => s.score != null)
+    .map(s => Number(s.score));
+
+  const avg = scores.length
+    ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
+    : "—";
+
+  document.getElementById('totalStudents').textContent = total;
+  document.getElementById('doneCount').textContent     = done;
+  document.getElementById('pendingCount').textContent  = pending;
+  document.getElementById('avgScore').textContent      = avg;
+}
+
+/* Reset stats */
+function resetStats() {
+  ['totalStudents','doneCount','pendingCount','avgScore'].forEach(id => {
+    document.getElementById(id).textContent = "—";
+  });
+}
+
+/* Render biểu đồ */
+function renderChart(subs) {
+  const scores = subs
+    .filter(s => s.score != null)
+    .map(s => Math.round(Number(s.score)));
+
+  const ctx     = document.getElementById('scoreChart');
+  const isEmpty = scores.length === 0;
+
+  document.getElementById('chartEmpty').style.display = isEmpty ? 'block' : 'none';
+  ctx.style.display = isEmpty ? 'none' : 'block';
+
+  if (myChart) { myChart.destroy(); myChart = null; }
+  if (isEmpty) return;
+
+  const counts = Array(11).fill(0);
+  scores.forEach(s => { if (s >= 0 && s <= 10) counts[s]++; });
+
+  myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['0','1','2','3','4','5','6','7','8','9','10'],
+      datasets: [{
+        label: 'Số học sinh',
+        data: counts,
+        backgroundColor: counts.map((_, i) =>
+          i >= 8 ? '#34a853' : i >= 5 ? '#fbbc04' : '#ea4335'
+        ),
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { size: 11 } },
+          grid: { color: '#f0f0f0' }
+        },
+        x: {
+          ticks: { font: { size: 11 } },
+          grid: { display: false }
+        }
+      }
     }
+  });
+}
 
-    init();
+/* Banner bài học */
+function showBanner() {
+  const banner = document.getElementById('lessonBanner');
+  if (!currentLesson) { hideBanner(); return; }
+
+  const topic  = TOPICS.find(t => t.lessons.some(l => l.id == currentLesson));
+  const lesson = topic ? topic.lessons.find(l => l.id == currentLesson) : null;
+
+  if (!lesson) { hideBanner(); return; }
+
+  // Ưu tiên dùng title từ DB
+  const dbL  = dbLessons.find(d => d.lesson_id == currentLesson);
+  const title = (dbL && dbL.title) ? dbL.title : lesson.name;
+  const desc  = (dbL && dbL.description) ? ` — ${dbL.description}` : "";
+
+  banner.style.display = 'block';
+  banner.innerHTML = `📖 <b>${topic.name}</b> &nbsp;›&nbsp; ${title}${desc}`;
+}
+
+function hideBanner() {
+  document.getElementById('lessonBanner').style.display = 'none';
+}
+
+/* =====================================================
+   START
+   ===================================================== */
+init();
 </script>
-
 </body>
 </html>
