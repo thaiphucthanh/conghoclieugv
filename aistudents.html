@@ -285,7 +285,7 @@ tbody tr:hover { background: #f8faff; }
 }
 
 .comment-cell {
-  max-width: 220px;
+  max-width: 260px;
   line-height: 1.55;
   color: #475569;
   font-size: 12px;
@@ -294,41 +294,6 @@ tbody tr:hover { background: #f8faff; }
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* ── TIME CELL ── */
-.time-cell {
-  white-space: nowrap;
-  font-size: 12px;
-  color: var(--muted);
-}
-.time-date {
-  font-weight: 600;
-  color: var(--text);
-  font-size: 12.5px;
-}
-.time-hour {
-  font-size: 11.5px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-.time-ago {
-  display: inline-block;
-  margin-top: 3px;
-  font-size: 10.5px;
-  padding: 1px 7px;
-  border-radius: 99px;
-  background: #f1f5f9;
-  color: #64748b;
-  font-weight: 500;
-}
-.time-ago.recent {
-  background: #dcfce7;
-  color: #16a34a;
-}
-.time-ago.today {
-  background: #eff6ff;
-  color: #2563eb;
 }
 
 /* ── BADGES ── */
@@ -569,13 +534,6 @@ tbody tr:hover { background: #f8faff; }
     </div>
   </div>
 
-  <!-- ERROR BANNER (runtime errors) -->
-  <div id="errBanner" style="display:none;
-    background:#fef2f2; border:1.5px solid #fca5a5;
-    border-radius:12px; padding:14px 18px; margin-bottom:18px;
-    font-size:13px; color:#991b1b;">
-  </div>
-
   <!-- STATS -->
   <div class="stats-row">
     <div class="stat-card s-total">
@@ -621,7 +579,6 @@ tbody tr:hover { background: #f8faff; }
             <th>Trạng thái</th>
             <th>Điểm AI</th>
             <th>Nhận xét AI</th>
-            <th>Thời gian nộp</th>
             <th>Video</th>
           </tr>
         </thead>
@@ -675,15 +632,9 @@ tbody tr:hover { background: #f8faff; }
 <script>
 /* ─────────────────────────────────────
    CONFIG SUPABASE
-   ⚠️  Key hiện tại là "Publishable Key" (sb_publishable_...)
-       nhưng supabase-js cần "anon JWT key" (eyJ...)
-   👉  Lấy tại: Supabase Dashboard
-       → Project Settings → API
-       → "Project API keys" → copy "anon / public"
 ───────────────────────────────────── */
 const SUPA_URL = 'https://kisogvsqpimhlqidkekf.supabase.co';
 const SUPA_KEY = 'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A';
-
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 /* ─────────────────────────────────────
@@ -763,17 +714,6 @@ async function init() {
   updateLastUpdated();
 }
 
-function showError(msg) {
-  const el = document.getElementById('errBanner');
-  el.style.display = 'block';
-  el.innerHTML = `❌ <b>Lỗi kết nối:</b> ${msg}
-    <br><span style="font-size:12px;color:#b91c1c;">Kiểm tra: (1) API key đúng chưa, (2) Supabase RLS có bật SELECT cho anon không, (3) tên bảng có đúng không.</span>`;
-}
-
-function hideError() {
-  document.getElementById('errBanner').style.display = 'none';
-}
-
 function updateLastUpdated() {
   const now = new Date();
   document.getElementById('lastUpdated').textContent =
@@ -786,19 +726,8 @@ async function loadClasses() {
     .select('class_id, name')
     .order('name');
 
-  if (error) {
-    console.error('loadClasses error:', error);
-    showError(error.message || JSON.stringify(error));
-    document.getElementById('lastUpdated').textContent = '❌ Lỗi kết nối';
-    return;
-  }
+  if (error) { console.error(error); return; }
 
-  if (!data || data.length === 0) {
-    showError('Bảng <b>classes</b> trống hoặc RLS đang chặn truy cập. Vào Supabase → Authentication → Policies → bảng classes → thêm policy SELECT cho role anon.');
-    return;
-  }
-
-  hideError();
   const sel = document.getElementById('classSelect');
   (data || []).forEach(c => {
     sel.innerHTML += `<option value="${c.class_id}">${c.name}</option>`;
@@ -876,34 +805,18 @@ function buildLessonSelect(topicId) {
    LOAD DATA
 ───────────────────────────────────── */
 async function loadClassData() {
-  const classIdInt = parseInt(currentClass, 10);
-
-  console.log('[DEBUG] Loading class_id:', classIdInt, typeof classIdInt);
-
   const { data: students, error: sErr } = await sb
     .from('students')
-    .select('student_id, name, class_id')
-    .eq('class_id', classIdInt)
+    .select('student_id, name')
+    .eq('class_id', currentClass)
     .order('name');
 
-  console.log('[DEBUG] students result:', students, 'error:', sErr);
-
-  if (sErr) {
-    console.error('loadStudents error:', sErr);
-    showError('Lỗi tải danh sách học sinh: ' + sErr.message);
-    return;
-  }
+  if (sErr) { console.error(sErr); return; }
   allStudents = students || [];
-  console.log('[DEBUG] allStudents count:', allStudents.length);
 
-  if (allStudents.length === 0) {
-    showError('Không tìm thấy học sinh nào trong lớp này. Kiểm tra lại class_id trong bảng students.');
-    allSubs = [];
-    return;
-  }
+  if (allStudents.length === 0) { allSubs = []; return; }
 
   const ids = allStudents.map(s => s.student_id);
-  console.log('[DEBUG] student_ids:', ids);
 
   const { data: subs, error: subErr } = await sb
     .from('submissions')
@@ -911,16 +824,8 @@ async function loadClassData() {
     .in('student_id', ids)
     .order('submitted_at', { ascending: false });
 
-  console.log('[DEBUG] submissions result:', subs, 'error:', subErr);
-
-  if (subErr) {
-    console.error('loadSubs error:', subErr);
-    showError('Lỗi tải submissions: ' + subErr.message);
-    return;
-  }
-  hideError();
+  if (subErr) { console.error(subErr); return; }
   allSubs = subs || [];
-  console.log('[DEBUG] allSubs count:', allSubs.length);
 }
 
 /* ─────────────────────────────────────
@@ -942,52 +847,9 @@ function getFilteredSubs() {
 }
 
 /* ─────────────────────────────────────
-   FORMAT TIME HELPER
+   NORMALIZE VIDEO URL  ← FIX CHÍNH
+   Chuyển mọi dạng Drive URL → /preview
 ───────────────────────────────────── */
-function formatTime(raw) {
-  if (!raw) return null;
-
-  const date = new Date(raw);
-  if (isNaN(date)) return null;
-
-  const now   = new Date();
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 60000);
-  const diffH   = Math.floor(diffMs / 3600000);
-  const diffD   = Math.floor(diffMs / 86400000);
-
-  // Ngày & giờ
-  const dayStr = date.toLocaleDateString('vi-VN', {
-    day: '2-digit', month: '2-digit', year: 'numeric'
-  });
-  const hourStr = date.toLocaleTimeString('vi-VN', {
-    hour: '2-digit', minute: '2-digit'
-  });
-
-  // Nhãn "vừa xong / hôm nay / N ngày trước"
-  let agoLabel = '';
-  let agoCls   = '';
-
-  if (diffMin < 60) {
-    agoLabel = diffMin <= 1 ? 'Vừa xong' : `${diffMin} phút trước`;
-    agoCls   = 'recent';
-  } else if (diffH < 24) {
-    agoLabel = `${diffH} giờ trước`;
-    agoCls   = 'today';
-  } else if (diffD === 1) {
-    agoLabel = 'Hôm qua';
-  } else if (diffD < 30) {
-    agoLabel = `${diffD} ngày trước`;
-  } else {
-    agoLabel = dayStr;
-  }
-
-  return { dayStr, hourStr, agoLabel, agoCls };
-}
-
-/* -----------------------------------------
-   Chuyen moi dang Drive URL sang /preview
------------------------------------------ */
 function normalizeVideoUrl(raw) {
   if (!raw) return null;
 
@@ -1093,27 +955,12 @@ function renderTable(students, subs) {
         .replace(/'/g, "\\'")
         .replace(/\n/g, ' ')
         .substring(0, 80);
-      const escapedTime = timeInfo
-        ? `${timeInfo.dayStr} ${timeInfo.hourStr}`.replace(/'/g, "\\'")
-        : '';
 
       videoBtn = `<button
         class="btn-video"
-        onclick="openVideo('${previewUrl}', '${escapedName}', '${escapedScore}', '${escapedComment}', '${escapedTime}')">
+        onclick="openVideo('${previewUrl}', '${escapedName}', '${escapedScore}', '${escapedComment}')">
         ▶ Xem video
       </button>`;
-    }
-
-    // Thời gian nộp
-    const timeInfo = hasSub ? formatTime(mySub.submitted_at) : null;
-    let timeCell = `<span style="color:#94a3b8;font-size:12px;">—</span>`;
-    if (timeInfo) {
-      timeCell = `
-        <div class="time-cell">
-          <div class="time-date">${timeInfo.dayStr}</div>
-          <div class="time-hour">${timeInfo.hourStr}</div>
-          <span class="time-ago ${timeInfo.agoCls}">${timeInfo.agoLabel}</span>
-        </div>`;
     }
 
     html += `
@@ -1122,7 +969,6 @@ function renderTable(students, subs) {
         <td>${badge}</td>
         <td>${scoreChip}</td>
         <td class="comment-cell">${comment}</td>
-        <td>${timeCell}</td>
         <td>${videoBtn}</td>
       </tr>`;
   });
@@ -1245,7 +1091,7 @@ function showEmpty() {
 /* ─────────────────────────────────────
    VIDEO MODAL
 ───────────────────────────────────── */
-function openVideo(url, studentName, score, comment, submittedAt) {
+function openVideo(url, studentName, score, comment) {
   document.getElementById('videoFrame').src = url;
   document.getElementById('videoModal').classList.add('open');
 
@@ -1253,7 +1099,6 @@ function openVideo(url, studentName, score, comment, submittedAt) {
   info.innerHTML = `
     <span>👤 <strong>${studentName || '—'}</strong></span>
     <span>⭐ Điểm: <strong>${score !== undefined ? score : '—'}</strong>/10</span>
-    ${submittedAt ? `<span>🕐 <strong>${submittedAt}</strong></span>` : ''}
     ${comment ? `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ${comment}...</span>` : ''}
   `;
 
