@@ -6,304 +6,640 @@
 <title>Quản lý lớp học - Nhận xét AI</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
 :root {
-  --primary: #1a73e8;
-  --primary-light: #e8f0fe;
-  --success: #188038;
-  --success-light: #e6f4ea;
-  --danger: #c5221f;
-  --danger-light: #fce8e6;
-  --warning: #e37400;
-  --warning-light: #fef7e0;
-  --text: #202124;
-  --muted: #5f6368;
-  --border: #e0e0e0;
-  --bg: #f8f9fa;
+  --primary: #2563eb;
+  --primary-light: #eff6ff;
+  --primary-mid: #bfdbfe;
+  --success: #16a34a;
+  --success-light: #f0fdf4;
+  --danger: #dc2626;
+  --danger-light: #fef2f2;
+  --warning: #d97706;
+  --warning-light: #fffbeb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --bg: #f1f5f9;
   --card: #ffffff;
-  --radius: 12px;
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
 }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Be Vietnam Pro', sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding: 24px 20px 48px;
+  min-height: 100vh;
 }
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--primary);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 20px;
-}
-.back-link:hover { text-decoration: underline; }
-.page-header { text-align: center; margin-bottom: 28px; }
-.page-header h1 { font-size: 22px; font-weight: 700; color: var(--text); }
-.page-header p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-/* FILTER */
-.filter-box {
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 0 var(--border);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.topbar-brand .logo-icon {
+  width: 32px; height: 32px;
+  background: var(--primary);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: #fff;
+}
+.topbar-right {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* ── MAIN LAYOUT ── */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.page-header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px 24px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   align-items: end;
+  box-shadow: var(--shadow);
 }
-.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .filter-group label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.6px;
 }
 select {
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
   background: #fafafa;
-  font-size: 14px;
+  font-size: 13.5px;
+  font-family: 'Be Vietnam Pro', sans-serif;
   color: var(--text);
   cursor: pointer;
-  transition: border 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
 }
-select:focus { outline: none; border-color: var(--primary); background: #fff; }
-select:disabled { opacity: 0.5; cursor: not-allowed; }
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  background-color: #fff;
+}
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
-/* STATS */
+/* ── STATS ── */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 .stat-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px 16px;
-  text-align: center;
+  padding: 20px 18px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s;
 }
-.stat-card .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
-.stat-card .stat-val   { font-size: 28px; font-weight: 700; color: var(--primary); line-height: 1; }
-.stat-card.s-done  .stat-val { color: var(--success); }
-.stat-card.s-miss  .stat-val { color: var(--danger); }
-.stat-card.s-score .stat-val { color: var(--warning); }
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.stat-card.s-total::before  { background: var(--primary); }
+.stat-card.s-done::before   { background: var(--success); }
+.stat-card.s-miss::before   { background: var(--danger); }
+.stat-card.s-score::before  { background: var(--warning); }
 
-/* BANNER */
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.stat-val {
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.s-total .stat-val  { color: var(--primary); }
+.s-done  .stat-val  { color: var(--success); }
+.s-miss  .stat-val  { color: var(--danger); }
+.s-score .stat-val  { color: var(--warning); }
+
+/* ── LESSON BANNER ── */
 .lesson-banner {
   display: none;
   background: var(--primary-light);
-  border: 1px solid #c5d9f7;
-  border-radius: var(--radius);
-  padding: 12px 18px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  border: 1.5px solid var(--primary-mid);
+  border-radius: 10px;
+  padding: 11px 18px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
   color: var(--primary);
   font-weight: 500;
+  animation: slideIn 0.25s ease;
+}
+@keyframes slideIn {
+  from { opacity:0; transform:translateY(-6px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 
-/* CONTENT */
+/* ── CONTENT GRID ── */
 .content-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 320px;
   gap: 20px;
+  align-items: start;
 }
+
+/* ── TABLE CARD ── */
 .table-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
-.table-card .card-header {
-  padding: 14px 18px;
+.card-header {
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: #fafbff;
 }
-.card-header-right { font-size: 12px; color: var(--muted); font-weight: 400; }
+.card-header-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.card-header-sub {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* ── TABLE ── */
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 thead th {
-  background: #f8f9fa;
-  padding: 10px 14px;
+  background: #f8fafc;
+  padding: 10px 16px;
   text-align: left;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   color: var(--muted);
   border-bottom: 1px solid var(--border);
 }
 tbody td {
-  padding: 11px 14px;
-  border-bottom: 1px solid #f0f0f0;
-  vertical-align: top;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
   color: var(--text);
 }
 tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #fafbff; }
-.comment-cell {
-  max-width: 280px;
-  white-space: normal;
-  line-height: 1.5;
-  color: #444;
-  font-size: 12px;
+tbody tr {
+  transition: background 0.15s;
 }
+tbody tr:hover { background: #f8faff; }
+
+.student-name {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.comment-cell {
+  max-width: 260px;
+  line-height: 1.55;
+  color: #475569;
+  font-size: 12px;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── BADGES ── */
 .badge {
-  display: inline-block;
-  padding: 3px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
   border-radius: 99px;
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.1px;
 }
 .badge-done    { background: var(--success-light); color: var(--success); }
-.badge-none    { background: var(--danger-light);  color: var(--danger);  }
+.badge-none    { background: var(--danger-light);  color: var(--danger); }
 .badge-pending { background: var(--warning-light); color: var(--warning); }
+
+/* ── SCORE CHIP ── */
 .score-chip {
-  display: inline-block;
-  min-width: 36px;
-  text-align: center;
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 28px;
+  padding: 0 8px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
 }
 .score-high { background: var(--success-light); color: var(--success); }
 .score-mid  { background: var(--warning-light); color: var(--warning); }
-.score-low  { background: var(--danger-light);  color: var(--danger);  }
+.score-low  { background: var(--danger-light);  color: var(--danger); }
+
+/* ── VIDEO BUTTON ── */
+.btn-video {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  border: 1px solid var(--primary-mid);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  text-decoration: none;
+}
+.btn-video:hover {
+  background: var(--primary-mid);
+  transform: scale(1.04);
+}
+
+/* ── CHART CARD ── */
 .chart-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 80px;
 }
-.chart-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text); }
+.chart-card h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+/* ── EMPTY STATE ── */
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: 48px 20px;
   color: var(--muted);
-  font-size: 14px;
 }
-.empty-icon { font-size: 32px; margin-bottom: 8px; }
+.empty-state .ei { font-size: 36px; margin-bottom: 10px; }
+.empty-state p { font-size: 13.5px; font-weight: 500; }
+.empty-state span { font-size: 12px; color: #94a3b8; }
 
-@media (max-width: 900px) {
-  .stats-row    { grid-template-columns: repeat(2, 1fr); }
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.modal-overlay.open { display: flex; }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.modal-box {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 22px;
+  width: 92%;
+  max-width: 780px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn {
+  from { opacity:0; transform: scale(0.92) translateY(12px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.modal-close:hover { background: var(--danger-light); color: var(--danger); }
+
+.modal-iframe-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+.modal-iframe-wrap iframe {
+  display: block;
+  width: 100%;
+  height: 440px;
+  border: none;
+}
+.modal-student-info {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 16px;
+}
+.modal-student-info strong { color: var(--text); }
+
+/* ── LOADING SPINNER ── */
+.spinner-wrap {
+  display: none;
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
   .content-grid { grid-template-columns: 1fr; }
-  .filter-box   { grid-template-columns: 1fr; }
+  .chart-card { position: static; }
+}
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .main { padding: 16px 14px 48px; }
+  .filter-bar { grid-template-columns: 1fr; }
+  .topbar { padding: 0 16px; }
+  .modal-iframe-wrap iframe { height: 260px; }
+}
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .stat-val { font-size: 26px; }
 }
 </style>
 </head>
 <body>
 
-<a class="back-link" href="index.html">← Quay lại trang chủ GV</a>
-
-<div class="page-header">
-  <h1>📋 Hệ thống quản lý học liệu</h1>
-  <p>Theo dõi tiến độ và kết quả học sinh theo từng chủ đề, bài học</p>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo-icon">🏸</div>
+    AI Video Reviewer
+  </div>
+  <div class="topbar-right" id="lastUpdated">Đang tải...</div>
 </div>
 
-<div class="filter-box">
-  <div class="filter-group">
-    <label>Lớp học</label>
-    <select id="classSelect" onchange="onClassChange()">
-      <option value="">-- Chọn lớp --</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label>Chủ đề</label>
-    <select id="topicSelect" onchange="onTopicChange()" disabled>
-      <option value="">-- Tất cả chủ đề --</option>
-    </select>
-  </div>
-  <div class="filter-group">
-    <label>Bài học</label>
-    <select id="lessonSelect" onchange="onLessonChange()" disabled>
-      <option value="">-- Tất cả bài --</option>
-    </select>
-  </div>
-</div>
+<!-- MAIN -->
+<div class="main">
 
-<div id="lessonBanner" class="lesson-banner"></div>
+  <div class="page-header">
+    <h1>📋 Bảng quản lý học liệu</h1>
+    <p>Theo dõi tiến độ nộp bài và nhận xét AI theo từng lớp, chủ đề, bài học</p>
+  </div>
 
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-label">Sĩ số lớp</div>
-    <div class="stat-val" id="totalStudents">—</div>
-  </div>
-  <div class="stat-card s-done">
-    <div class="stat-label">Đã nộp bài</div>
-    <div class="stat-val" id="doneCount">—</div>
-  </div>
-  <div class="stat-card s-miss">
-    <div class="stat-label">Chưa nộp bài</div>
-    <div class="stat-val" id="pendingCount">—</div>
-  </div>
-  <div class="stat-card s-score">
-    <div class="stat-label">Điểm TB lớp</div>
-    <div class="stat-val" id="avgScore">—</div>
-  </div>
-</div>
-
-<div class="content-grid">
-  <div class="table-card">
-    <div class="card-header">
-      Danh sách học sinh
-      <span class="card-header-right" id="tableSubtitle"></span>
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Lớp học</label>
+      <select id="classSelect" onchange="onClassChange()">
+        <option value="">— Chọn lớp —</option>
+      </select>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Học sinh</th>
-          <th>Trạng thái</th>
-          <th>Điểm AI</th>
-          <th>Nhận xét AI</th>
-          <th>Video</th>
-        </tr>
-      </thead>
-      <tbody id="studentList">
-        <tr><td colspan="5" class="empty-state">
-          <div class="empty-icon">🏫</div>
-          Chọn lớp học để xem danh sách
-        </td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="chart-card">
-    <h3>📊 Phổ điểm của lớp</h3>
-    <canvas id="scoreChart"></canvas>
-    <div id="chartEmpty" class="empty-state" style="display:none;">
-      <div class="empty-icon">📈</div>
-      Chưa có dữ liệu điểm
+    <div class="filter-group">
+      <label>Chủ đề</label>
+      <select id="topicSelect" onchange="onTopicChange()" disabled>
+        <option value="">— Tất cả chủ đề —</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Bài học</label>
+      <select id="lessonSelect" onchange="onLessonChange()" disabled>
+        <option value="">— Tất cả bài —</option>
+      </select>
     </div>
   </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card s-total">
+      <div class="stat-label">Sĩ số lớp</div>
+      <div class="stat-val" id="totalStudents">—</div>
+    </div>
+    <div class="stat-card s-done">
+      <div class="stat-label">Đã nộp bài</div>
+      <div class="stat-val" id="doneCount">—</div>
+    </div>
+    <div class="stat-card s-miss">
+      <div class="stat-label">Chưa nộp bài</div>
+      <div class="stat-val" id="pendingCount">—</div>
+    </div>
+    <div class="stat-card s-score">
+      <div class="stat-label">Điểm TB lớp</div>
+      <div class="stat-val" id="avgScore">—</div>
+    </div>
+  </div>
+
+  <!-- LESSON BANNER -->
+  <div id="lessonBanner" class="lesson-banner"></div>
+
+  <!-- CONTENT GRID -->
+  <div class="content-grid">
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="card-header">
+        <span class="card-header-title">Danh sách học sinh</span>
+        <span class="card-header-sub" id="tableSubtitle">Chọn lớp để xem</span>
+      </div>
+
+      <div class="spinner-wrap" id="tableSpinner">
+        <div class="spinner"></div>
+        Đang tải dữ liệu...
+      </div>
+
+      <table id="mainTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Học sinh</th>
+            <th>Trạng thái</th>
+            <th>Điểm AI</th>
+            <th>Nhận xét AI</th>
+            <th>Video</th>
+          </tr>
+        </thead>
+        <tbody id="studentList"></tbody>
+      </table>
+
+      <div id="tableEmpty" class="empty-state">
+        <div class="ei">🏫</div>
+        <p>Chọn lớp học để bắt đầu</p>
+        <span>Dữ liệu sẽ hiển thị sau khi bạn chọn lớp</span>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-card">
+      <h3>📊 Phổ điểm của lớp</h3>
+      <canvas id="scoreChart"></canvas>
+      <div id="chartEmpty" class="empty-state" style="padding:24px 12px;">
+        <div class="ei">📈</div>
+        <p>Chưa có dữ liệu điểm</p>
+        <span>Biểu đồ hiển thị khi có bài nộp</span>
+      </div>
+    </div>
+
+  </div>
 </div>
 
+<!-- ════════════════════════════════════
+     VIDEO MODAL
+════════════════════════════════════ -->
+<div class="modal-overlay" id="videoModal" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">🎥 Video học sinh</div>
+      <button class="modal-close" onclick="closeVideo()" title="Đóng">✕</button>
+    </div>
+    <div class="modal-iframe-wrap">
+      <iframe id="videoFrame"
+        src=""
+        allow="autoplay; fullscreen"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <div class="modal-student-info" id="modalInfo"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCRIPT
+════════════════════════════════════ -->
 <script>
-/* =====================================================
-   CONFIG
-   ===================================================== */
+/* ─────────────────────────────────────
+   CONFIG SUPABASE
+───────────────────────────────────── */
 const SUPA_URL = 'https://kisogvsqpimhlqidkekf.supabase.co';
 const SUPA_KEY = 'sb_publishable_nDW5RCRQYvaZ0-oEQci9jQ_fuwA3i2A';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-/* =====================================================
-   TOPICS — lesson_id dạng [chủ đề * 100 + bài]
-   Ví dụ: Chủ đề 5 Bài 2 = 502, Chủ đề 1 Bài 1 = 101
-   ===================================================== */
+/* ─────────────────────────────────────
+   TOPICS DATA
+───────────────────────────────────── */
 const TOPICS = [
   {
     id: 1,
@@ -359,9 +695,9 @@ const TOPICS = [
   }
 ];
 
-/* =====================================================
+/* ─────────────────────────────────────
    STATE
-   ===================================================== */
+───────────────────────────────────── */
 let allStudents   = [];
 let allSubs       = [];
 let currentClass  = "";
@@ -369,12 +705,19 @@ let currentTopic  = "";
 let currentLesson = "";
 let myChart       = null;
 
-/* =====================================================
+/* ─────────────────────────────────────
    INIT
-   ===================================================== */
+───────────────────────────────────── */
 async function init() {
-  await loadClasses();
   buildTopicSelect();
+  await loadClasses();
+  updateLastUpdated();
+}
+
+function updateLastUpdated() {
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent =
+    'Cập nhật: ' + now.toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' });
 }
 
 async function loadClasses() {
@@ -393,15 +736,15 @@ async function loadClasses() {
 
 function buildTopicSelect() {
   const sel = document.getElementById('topicSelect');
-  sel.innerHTML = '<option value="">-- Tất cả chủ đề --</option>';
+  sel.innerHTML = '<option value="">— Tất cả chủ đề —</option>';
   TOPICS.forEach(t => {
     sel.innerHTML += `<option value="${t.id}">${t.name}</option>`;
   });
 }
 
-/* =====================================================
+/* ─────────────────────────────────────
    EVENTS
-   ===================================================== */
+───────────────────────────────────── */
 async function onClassChange() {
   currentClass  = document.getElementById('classSelect').value;
   currentTopic  = "";
@@ -416,13 +759,15 @@ async function onClassChange() {
   resetStats();
 
   if (!currentClass) {
-    renderTable([], []);
+    showEmpty();
     renderChart([]);
     return;
   }
 
+  showSpinner();
   await loadClassData();
   renderView();
+  updateLastUpdated();
 }
 
 function onTopicChange() {
@@ -445,7 +790,7 @@ function onLessonChange() {
 
 function buildLessonSelect(topicId) {
   const sel = document.getElementById('lessonSelect');
-  sel.innerHTML = '<option value="">-- Tất cả bài trong chủ đề --</option>';
+  sel.innerHTML = '<option value="">— Tất cả bài trong chủ đề —</option>';
   if (!topicId) return;
 
   const topic = TOPICS.find(t => t.id == topicId);
@@ -456,11 +801,10 @@ function buildLessonSelect(topicId) {
   });
 }
 
-/* =====================================================
+/* ─────────────────────────────────────
    LOAD DATA
-   ===================================================== */
+───────────────────────────────────── */
 async function loadClassData() {
-  // Load học sinh
   const { data: students, error: sErr } = await sb
     .from('students')
     .select('student_id, name')
@@ -474,7 +818,6 @@ async function loadClassData() {
 
   const ids = allStudents.map(s => s.student_id);
 
-  // Load TẤT CẢ submissions của lớp — lọc ở client
   const { data: subs, error: subErr } = await sb
     .from('submissions')
     .select('submission_id, student_id, lesson_id, score, summary, video_url, submitted_at, status')
@@ -483,36 +826,56 @@ async function loadClassData() {
 
   if (subErr) { console.error(subErr); return; }
   allSubs = subs || [];
-
-  console.log("Tổng submissions:", allSubs.length);
-  console.log("Lesson IDs hiện có:", [...new Set(allSubs.map(s => s.lesson_id))]);
 }
 
-/* =====================================================
-   LỌC SUBMISSIONS
-   ===================================================== */
+/* ─────────────────────────────────────
+   FILTER SUBMISSIONS
+───────────────────────────────────── */
 function getFilteredSubs() {
-  // Không lọc gì
   if (!currentLesson && !currentTopic) return allSubs;
 
   let lessonIds = [];
 
   if (currentLesson) {
-    // Lọc đúng 1 bài
     lessonIds = [parseInt(currentLesson)];
   } else if (currentTopic) {
-    // Lọc theo chủ đề → lấy tất cả bài của chủ đề đó
     const topic = TOPICS.find(t => t.id == currentTopic);
     lessonIds   = topic ? topic.lessons.map(l => l.id) : [];
   }
 
-  console.log("Lọc lesson_ids:", lessonIds);
   return allSubs.filter(s => lessonIds.includes(Number(s.lesson_id)));
 }
 
-/* =====================================================
+/* ─────────────────────────────────────
+   NORMALIZE VIDEO URL  ← FIX CHÍNH
+   Chuyển mọi dạng Drive URL → /preview
+───────────────────────────────────── */
+function normalizeVideoUrl(raw) {
+  if (!raw) return null;
+
+  // Đã là /preview rồi → giữ nguyên
+  if (raw.includes('/preview')) return raw;
+
+  // Dạng https://drive.google.com/uc?id=FILE_ID
+  // hoặc https://drive.google.com/uc?export=view&id=FILE_ID
+  const ucMatch = raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (ucMatch) {
+    return `https://drive.google.com/file/d/${ucMatch[1]}/preview`;
+  }
+
+  // Dạng /file/d/FILE_ID/view
+  const fileMatch = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) {
+    return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  }
+
+  // Không nhận ra → trả về nguyên gốc
+  return raw;
+}
+
+/* ─────────────────────────────────────
    RENDER
-   ===================================================== */
+───────────────────────────────────── */
 function renderView() {
   const filteredSubs = getFilteredSubs();
   renderTable(allStudents, filteredSubs);
@@ -536,17 +899,30 @@ function updateTableSubtitle() {
 }
 
 function renderTable(students, subs) {
-  const tbody = document.getElementById('studentList');
+  const tbody   = document.getElementById('studentList');
+  const table   = document.getElementById('mainTable');
+  const empty   = document.getElementById('tableEmpty');
+  const spinner = document.getElementById('tableSpinner');
+
+  spinner.style.display = 'none';
 
   if (!students || students.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">
-      <div class="empty-icon">🏫</div>Chọn lớp học để xem danh sách</td></tr>`;
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    empty.innerHTML = `
+      <div class="ei">🏫</div>
+      <p>Chọn lớp học để bắt đầu</p>
+      <span>Dữ liệu sẽ hiển thị sau khi bạn chọn lớp</span>`;
     return;
   }
+
+  table.style.display = 'table';
+  empty.style.display = 'none';
 
   let html = "";
 
   students.forEach(student => {
+    // Lấy submission mới nhất của học sinh này
     const mySub  = subs.find(s => s.student_id === student.student_id);
     const hasSub = !!mySub;
 
@@ -555,32 +931,45 @@ function renderTable(students, subs) {
     const status  = mySub ? (mySub.status || "completed") : null;
 
     // Score chip
-    let scoreChip = "—";
+    let scoreChip = `<span style="color:#94a3b8;font-size:13px;">—</span>`;
     if (score !== null) {
       const cls = score >= 8 ? "score-high" : score >= 5 ? "score-mid" : "score-low";
       scoreChip = `<span class="score-chip ${cls}">${score}</span>`;
     }
 
-    // Badge trạng thái
-    let badge = `<span class="badge badge-none">Chưa nộp</span>`;
+    // Badge
+    let badge = `<span class="badge badge-none">⊗ Chưa nộp</span>`;
     if (hasSub) {
       badge = status === "pending"
-        ? `<span class="badge badge-pending">Đang chờ</span>`
-        : `<span class="badge badge-done">Đã nộp</span>`;
+        ? `<span class="badge badge-pending">⏳ Đang chờ</span>`
+        : `<span class="badge badge-done">✓ Đã nộp</span>`;
     }
 
-    // Video
-    const video = (hasSub && mySub.video_url)
-      ? `<a href="${mySub.video_url}" target="_blank" style="color:var(--primary);font-size:12px;">▶ Xem</a>`
-      : "—";
+    // Video button — dùng normalizeVideoUrl
+    let videoBtn = `<span style="color:#94a3b8;font-size:12px;">—</span>`;
+    if (hasSub && mySub.video_url) {
+      const previewUrl = normalizeVideoUrl(mySub.video_url);
+      const escapedName = student.name.replace(/'/g, "\\'");
+      const escapedScore = score !== null ? score : '—';
+      const escapedComment = (mySub.summary || '')
+        .replace(/'/g, "\\'")
+        .replace(/\n/g, ' ')
+        .substring(0, 80);
+
+      videoBtn = `<button
+        class="btn-video"
+        onclick="openVideo('${previewUrl}', '${escapedName}', '${escapedScore}', '${escapedComment}')">
+        ▶ Xem video
+      </button>`;
+    }
 
     html += `
       <tr>
-        <td style="font-weight:500;">${student.name}</td>
+        <td><span class="student-name">${student.name}</span></td>
         <td>${badge}</td>
         <td>${scoreChip}</td>
         <td class="comment-cell">${comment}</td>
-        <td>${video}</td>
+        <td>${videoBtn}</td>
       </tr>`;
   });
 
@@ -600,16 +989,15 @@ function updateStats(students, subs) {
     ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
     : "—";
 
-  document.getElementById('totalStudents').textContent = total;
+  document.getElementById('totalStudents').textContent = total || "—";
   document.getElementById('doneCount').textContent     = done;
   document.getElementById('pendingCount').textContent  = total - done;
   document.getElementById('avgScore').textContent      = avg;
 }
 
 function resetStats() {
-  ['totalStudents','doneCount','pendingCount','avgScore'].forEach(id => {
-    document.getElementById(id).textContent = "—";
-  });
+  ['totalStudents','doneCount','pendingCount','avgScore']
+    .forEach(id => { document.getElementById(id).textContent = "—"; });
 }
 
 function renderChart(subs) {
@@ -634,22 +1022,33 @@ function renderChart(subs) {
         label: 'Số học sinh',
         data: counts,
         backgroundColor: counts.map((_, i) =>
-          i >= 8 ? '#34a853' : i >= 5 ? '#fbbc04' : '#ea4335'
+          i >= 8 ? '#bbf7d0' : i >= 5 ? '#fef08a' : '#fecaca'
         ),
-        borderRadius: 6
+        borderColor: counts.map((_, i) =>
+          i >= 8 ? '#16a34a' : i >= 5 ? '#ca8a04' : '#dc2626'
+        ),
+        borderWidth: 2,
+        borderRadius: 7
       }]
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.raw} học sinh`
+          }
+        }
+      },
       scales: {
         y: {
           beginAtZero: true,
-          ticks: { stepSize: 1, font: { size: 11 } },
-          grid: { color: '#f0f0f0' }
+          ticks: { stepSize: 1, font: { size: 11, family: 'Be Vietnam Pro' } },
+          grid: { color: '#f1f5f9' }
         },
         x: {
-          ticks: { font: { size: 11 } },
+          ticks: { font: { size: 11, family: 'Be Vietnam Pro' } },
           grid: { display: false }
         }
       }
@@ -673,10 +1072,63 @@ function hideBanner() {
   document.getElementById('lessonBanner').style.display = 'none';
 }
 
-/* =====================================================
+function showSpinner() {
+  document.getElementById('tableSpinner').style.display = 'block';
+  document.getElementById('mainTable').style.display   = 'none';
+  document.getElementById('tableEmpty').style.display  = 'none';
+}
+
+function showEmpty() {
+  document.getElementById('tableSpinner').style.display = 'none';
+  document.getElementById('mainTable').style.display   = 'none';
+  document.getElementById('tableEmpty').style.display  = 'block';
+  document.getElementById('tableEmpty').innerHTML = `
+    <div class="ei">🏫</div>
+    <p>Chọn lớp học để bắt đầu</p>
+    <span>Dữ liệu sẽ hiển thị sau khi bạn chọn lớp</span>`;
+}
+
+/* ─────────────────────────────────────
+   VIDEO MODAL
+───────────────────────────────────── */
+function openVideo(url, studentName, score, comment) {
+  document.getElementById('videoFrame').src = url;
+  document.getElementById('videoModal').classList.add('open');
+
+  const info = document.getElementById('modalInfo');
+  info.innerHTML = `
+    <span>👤 <strong>${studentName || '—'}</strong></span>
+    <span>⭐ Điểm: <strong>${score !== undefined ? score : '—'}</strong>/10</span>
+    ${comment ? `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ${comment}...</span>` : ''}
+  `;
+
+  // Ngăn scroll body
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideo() {
+  document.getElementById('videoFrame').src = '';
+  document.getElementById('videoModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  // Đóng modal khi click vào overlay (không phải modal-box)
+  if (e.target === document.getElementById('videoModal')) {
+    closeVideo();
+  }
+}
+
+// Đóng modal bằng phím Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeVideo();
+});
+
+/* ─────────────────────────────────────
    START
-   ===================================================== */
+───────────────────────────────────── */
 init();
 </script>
+
 </body>
 </html>
