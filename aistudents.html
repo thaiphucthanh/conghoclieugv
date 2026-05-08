@@ -285,7 +285,7 @@ tbody tr:hover { background: #f8faff; }
 }
 
 .comment-cell {
-  max-width: 260px;
+  max-width: 220px;
   line-height: 1.55;
   color: #475569;
   font-size: 12px;
@@ -294,6 +294,41 @@ tbody tr:hover { background: #f8faff; }
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* ── TIME CELL ── */
+.time-cell {
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.time-date {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 12.5px;
+}
+.time-hour {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.time-ago {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 10.5px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 500;
+}
+.time-ago.recent {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.time-ago.today {
+  background: #eff6ff;
+  color: #2563eb;
 }
 
 /* ── BADGES ── */
@@ -579,6 +614,7 @@ tbody tr:hover { background: #f8faff; }
             <th>Trạng thái</th>
             <th>Điểm AI</th>
             <th>Nhận xét AI</th>
+            <th>Thời gian nộp</th>
             <th>Video</th>
           </tr>
         </thead>
@@ -847,7 +883,50 @@ function getFilteredSubs() {
 }
 
 /* ─────────────────────────────────────
-   NORMALIZE VIDEO URL  ← FIX CHÍNH
+   FORMAT TIME HELPER
+───────────────────────────────────── */
+function formatTime(raw) {
+  if (!raw) return null;
+
+  const date = new Date(raw);
+  if (isNaN(date)) return null;
+
+  const now   = new Date();
+  const diffMs = now - date;
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffH   = Math.floor(diffMs / 3600000);
+  const diffD   = Math.floor(diffMs / 86400000);
+
+  // Ngày & giờ
+  const dayStr = date.toLocaleDateString('vi-VN', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+  const hourStr = date.toLocaleTimeString('vi-VN', {
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  // Nhãn "vừa xong / hôm nay / N ngày trước"
+  let agoLabel = '';
+  let agoCls   = '';
+
+  if (diffMin < 60) {
+    agoLabel = diffMin <= 1 ? 'Vừa xong' : `${diffMin} phút trước`;
+    agoCls   = 'recent';
+  } else if (diffH < 24) {
+    agoLabel = `${diffH} giờ trước`;
+    agoCls   = 'today';
+  } else if (diffD === 1) {
+    agoLabel = 'Hôm qua';
+  } else if (diffD < 30) {
+    agoLabel = `${diffD} ngày trước`;
+  } else {
+    agoLabel = dayStr;
+  }
+
+  return { dayStr, hourStr, agoLabel, agoCls };
+}
+
+
    Chuyển mọi dạng Drive URL → /preview
 ───────────────────────────────────── */
 function normalizeVideoUrl(raw) {
@@ -955,12 +1034,27 @@ function renderTable(students, subs) {
         .replace(/'/g, "\\'")
         .replace(/\n/g, ' ')
         .substring(0, 80);
+      const escapedTime = timeInfo
+        ? `${timeInfo.dayStr} ${timeInfo.hourStr}`.replace(/'/g, "\\'")
+        : '';
 
       videoBtn = `<button
         class="btn-video"
-        onclick="openVideo('${previewUrl}', '${escapedName}', '${escapedScore}', '${escapedComment}')">
+        onclick="openVideo('${previewUrl}', '${escapedName}', '${escapedScore}', '${escapedComment}', '${escapedTime}')">
         ▶ Xem video
       </button>`;
+    }
+
+    // Thời gian nộp
+    const timeInfo = hasSub ? formatTime(mySub.submitted_at || mySub.created_at) : null;
+    let timeCell = `<span style="color:#94a3b8;font-size:12px;">—</span>`;
+    if (timeInfo) {
+      timeCell = `
+        <div class="time-cell">
+          <div class="time-date">${timeInfo.dayStr}</div>
+          <div class="time-hour">${timeInfo.hourStr}</div>
+          <span class="time-ago ${timeInfo.agoCls}">${timeInfo.agoLabel}</span>
+        </div>`;
     }
 
     html += `
@@ -969,6 +1063,7 @@ function renderTable(students, subs) {
         <td>${badge}</td>
         <td>${scoreChip}</td>
         <td class="comment-cell">${comment}</td>
+        <td>${timeCell}</td>
         <td>${videoBtn}</td>
       </tr>`;
   });
@@ -1091,7 +1186,7 @@ function showEmpty() {
 /* ─────────────────────────────────────
    VIDEO MODAL
 ───────────────────────────────────── */
-function openVideo(url, studentName, score, comment) {
+function openVideo(url, studentName, score, comment, submittedAt) {
   document.getElementById('videoFrame').src = url;
   document.getElementById('videoModal').classList.add('open');
 
@@ -1099,6 +1194,7 @@ function openVideo(url, studentName, score, comment) {
   info.innerHTML = `
     <span>👤 <strong>${studentName || '—'}</strong></span>
     <span>⭐ Điểm: <strong>${score !== undefined ? score : '—'}</strong>/10</span>
+    ${submittedAt ? `<span>🕐 <strong>${submittedAt}</strong></span>` : ''}
     ${comment ? `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ${comment}...</span>` : ''}
   `;
 
