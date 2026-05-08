@@ -495,8 +495,10 @@ tbody tr:hover { background: #f8faff; }
 </head>
 <body>
 
-<!-- TOP BAR -->
 <div class="topbar">
+    <div class="back" style="padding-bottom: 20px;">
+    <a href="index.html" style="text-decoration:none; color: var(--primary); font-size: 1.2rem;">← Quay lại Trang chủ GV</a>
+    </div>
   <div class="topbar-brand">
     <div class="logo-icon">🏸</div>
     AI Video Reviewer
@@ -504,7 +506,6 @@ tbody tr:hover { background: #f8faff; }
   <div class="topbar-right" id="lastUpdated">Đang tải...</div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
   <div class="page-header">
@@ -512,7 +513,6 @@ tbody tr:hover { background: #f8faff; }
     <p>Theo dõi tiến độ nộp bài và nhận xét AI theo từng lớp, chủ đề, bài học</p>
   </div>
 
-  <!-- FILTER -->
   <div class="filter-bar">
     <div class="filter-group">
       <label>Lớp học</label>
@@ -534,7 +534,6 @@ tbody tr:hover { background: #f8faff; }
     </div>
   </div>
 
-  <!-- STATS -->
   <div class="stats-row">
     <div class="stat-card s-total">
       <div class="stat-label">Sĩ số lớp</div>
@@ -554,13 +553,10 @@ tbody tr:hover { background: #f8faff; }
     </div>
   </div>
 
-  <!-- LESSON BANNER -->
   <div id="lessonBanner" class="lesson-banner"></div>
 
-  <!-- CONTENT GRID -->
   <div class="content-grid">
 
-    <!-- TABLE -->
     <div class="table-card">
       <div class="card-header">
         <span class="card-header-title">Danh sách học sinh</span>
@@ -577,6 +573,7 @@ tbody tr:hover { background: #f8faff; }
           <tr>
             <th>Học sinh</th>
             <th>Trạng thái</th>
+            <th>Thời gian nộp</th>
             <th>Điểm AI</th>
             <th>Nhận xét AI</th>
             <th>Video</th>
@@ -592,7 +589,6 @@ tbody tr:hover { background: #f8faff; }
       </div>
     </div>
 
-    <!-- CHART -->
     <div class="chart-card">
       <h3>📊 Phổ điểm của lớp</h3>
       <canvas id="scoreChart"></canvas>
@@ -606,9 +602,6 @@ tbody tr:hover { background: #f8faff; }
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     VIDEO MODAL
-════════════════════════════════════ -->
 <div class="modal-overlay" id="videoModal" onclick="handleOverlayClick(event)">
   <div class="modal-box">
     <div class="modal-header">
@@ -626,9 +619,6 @@ tbody tr:hover { background: #f8faff; }
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCRIPT
-════════════════════════════════════ -->
 <script>
 /* ─────────────────────────────────────
    CONFIG SUPABASE
@@ -743,6 +733,17 @@ function buildTopicSelect() {
 }
 
 /* ─────────────────────────────────────
+   HELPER: FORMAT TIME
+───────────────────────────────────── */
+function formatDateTime(isoString) {
+  if (!isoString) return "—";
+  const date = new Date(isoString);
+  const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  const day = date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  return `${time} ${day}`;
+}
+
+/* ─────────────────────────────────────
    EVENTS
 ───────────────────────────────────── */
 async function onClassChange() {
@@ -847,29 +848,15 @@ function getFilteredSubs() {
 }
 
 /* ─────────────────────────────────────
-   NORMALIZE VIDEO URL  ← FIX CHÍNH
-   Chuyển mọi dạng Drive URL → /preview
+   NORMALIZE VIDEO URL
 ───────────────────────────────────── */
 function normalizeVideoUrl(raw) {
   if (!raw) return null;
-
-  // Đã là /preview rồi → giữ nguyên
   if (raw.includes('/preview')) return raw;
-
-  // Dạng https://drive.google.com/uc?id=FILE_ID
-  // hoặc https://drive.google.com/uc?export=view&id=FILE_ID
   const ucMatch = raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (ucMatch) {
-    return `https://drive.google.com/file/d/${ucMatch[1]}/preview`;
-  }
-
-  // Dạng /file/d/FILE_ID/view
+  if (ucMatch) return `https://drive.google.com/file/d/${ucMatch[1]}/preview`;
   const fileMatch = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (fileMatch) {
-    return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
-  }
-
-  // Không nhận ra → trả về nguyên gốc
+  if (fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
   return raw;
 }
 
@@ -909,10 +896,6 @@ function renderTable(students, subs) {
   if (!students || students.length === 0) {
     table.style.display = 'none';
     empty.style.display = 'block';
-    empty.innerHTML = `
-      <div class="ei">🏫</div>
-      <p>Chọn lớp học để bắt đầu</p>
-      <span>Dữ liệu sẽ hiển thị sau khi bạn chọn lớp</span>`;
     return;
   }
 
@@ -922,10 +905,10 @@ function renderTable(students, subs) {
   let html = "";
 
   students.forEach(student => {
-    // Lấy submission mới nhất của học sinh này
     const mySub  = subs.find(s => s.student_id === student.student_id);
     const hasSub = !!mySub;
 
+    const submittedTime = hasSub ? formatDateTime(mySub.submitted_at) : "—";
     const score   = hasSub && mySub.score != null ? Number(mySub.score) : null;
     const comment = hasSub ? (mySub.summary || "Chưa có nhận xét") : "—";
     const status  = mySub ? (mySub.status || "completed") : null;
@@ -945,7 +928,7 @@ function renderTable(students, subs) {
         : `<span class="badge badge-done">✓ Đã nộp</span>`;
     }
 
-    // Video button — dùng normalizeVideoUrl
+    // Video button
     let videoBtn = `<span style="color:#94a3b8;font-size:12px;">—</span>`;
     if (hasSub && mySub.video_url) {
       const previewUrl = normalizeVideoUrl(mySub.video_url);
@@ -967,6 +950,7 @@ function renderTable(students, subs) {
       <tr>
         <td><span class="student-name">${student.name}</span></td>
         <td>${badge}</td>
+        <td style="color: var(--muted); font-size: 12px; font-weight: 500;">${submittedTime}</td>
         <td>${scoreChip}</td>
         <td class="comment-cell">${comment}</td>
         <td>${videoBtn}</td>
@@ -980,14 +964,8 @@ function updateStats(students, subs) {
   const total   = students.length;
   const doneIds = new Set(subs.map(s => s.student_id));
   const done    = doneIds.size;
-
-  const scores = subs
-    .filter(s => s.score != null)
-    .map(s => Number(s.score));
-
-  const avg = scores.length
-    ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
-    : "—";
+  const scores = subs.filter(s => s.score != null).map(s => Number(s.score));
+  const avg = scores.length ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : "—";
 
   document.getElementById('totalStudents').textContent = total || "—";
   document.getElementById('doneCount').textContent     = done;
@@ -1021,36 +999,18 @@ function renderChart(subs) {
       datasets: [{
         label: 'Số học sinh',
         data: counts,
-        backgroundColor: counts.map((_, i) =>
-          i >= 8 ? '#bbf7d0' : i >= 5 ? '#fef08a' : '#fecaca'
-        ),
-        borderColor: counts.map((_, i) =>
-          i >= 8 ? '#16a34a' : i >= 5 ? '#ca8a04' : '#dc2626'
-        ),
+        backgroundColor: counts.map((_, i) => i >= 8 ? '#bbf7d0' : i >= 5 ? '#fef08a' : '#fecaca'),
+        borderColor: counts.map((_, i) => i >= 8 ? '#16a34a' : i >= 5 ? '#ca8a04' : '#dc2626'),
         borderWidth: 2,
         borderRadius: 7
       }]
     },
     options: {
       responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.raw} học sinh`
-          }
-        }
-      },
+      plugins: { legend: { display: false } },
       scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1, font: { size: 11, family: 'Be Vietnam Pro' } },
-          grid: { color: '#f1f5f9' }
-        },
-        x: {
-          ticks: { font: { size: 11, family: 'Be Vietnam Pro' } },
-          grid: { display: false }
-        }
+        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+        x: { grid: { display: false } }
       }
     }
   });
@@ -1059,76 +1019,46 @@ function renderChart(subs) {
 function showBanner() {
   const banner = document.getElementById('lessonBanner');
   if (!currentLesson) { hideBanner(); return; }
-
   const topic  = TOPICS.find(t => t.lessons.some(l => l.id == currentLesson));
   const lesson = topic ? topic.lessons.find(l => l.id == currentLesson) : null;
   if (!lesson) { hideBanner(); return; }
-
   banner.style.display = 'block';
   banner.innerHTML = `📖 <b>${topic.name}</b> &nbsp;›&nbsp; ${lesson.name}`;
 }
 
-function hideBanner() {
-  document.getElementById('lessonBanner').style.display = 'none';
-}
-
+function hideBanner() { document.getElementById('lessonBanner').style.display = 'none'; }
 function showSpinner() {
   document.getElementById('tableSpinner').style.display = 'block';
   document.getElementById('mainTable').style.display   = 'none';
   document.getElementById('tableEmpty').style.display  = 'none';
 }
-
 function showEmpty() {
   document.getElementById('tableSpinner').style.display = 'none';
   document.getElementById('mainTable').style.display   = 'none';
   document.getElementById('tableEmpty').style.display  = 'block';
-  document.getElementById('tableEmpty').innerHTML = `
-    <div class="ei">🏫</div>
-    <p>Chọn lớp học để bắt đầu</p>
-    <span>Dữ liệu sẽ hiển thị sau khi bạn chọn lớp</span>`;
 }
 
-/* ─────────────────────────────────────
-   VIDEO MODAL
-───────────────────────────────────── */
+/* ── VIDEO MODAL ── */
 function openVideo(url, studentName, score, comment) {
   document.getElementById('videoFrame').src = url;
   document.getElementById('videoModal').classList.add('open');
-
   const info = document.getElementById('modalInfo');
   info.innerHTML = `
     <span>👤 <strong>${studentName || '—'}</strong></span>
     <span>⭐ Điểm: <strong>${score !== undefined ? score : '—'}</strong>/10</span>
     ${comment ? `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">💬 ${comment}...</span>` : ''}
   `;
-
-  // Ngăn scroll body
   document.body.style.overflow = 'hidden';
 }
-
 function closeVideo() {
   document.getElementById('videoFrame').src = '';
   document.getElementById('videoModal').classList.remove('open');
   document.body.style.overflow = '';
 }
+function handleOverlayClick(e) { if (e.target === document.getElementById('videoModal')) closeVideo(); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeVideo(); });
 
-function handleOverlayClick(e) {
-  // Đóng modal khi click vào overlay (không phải modal-box)
-  if (e.target === document.getElementById('videoModal')) {
-    closeVideo();
-  }
-}
-
-// Đóng modal bằng phím Escape
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeVideo();
-});
-
-/* ─────────────────────────────────────
-   START
-───────────────────────────────────── */
 init();
 </script>
-
 </body>
 </html>
